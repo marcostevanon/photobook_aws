@@ -1,0 +1,26 @@
+{
+  "name": "photocontest_aws",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:marcostevanon/photocontest_aws.git"
+  },
+  "author": "marco.stevanon@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marcostevanon/photocontest_aws/issues"
+  },
+  "homepage": "https://github.com/marcostevanon/photocontest_aws#readme",
+  "dependencies": {
+    "aws-sdk": "^2.373.0",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "multer": "^1.4.1",
+    "pg": "^7.7.1"
+  }
+}
