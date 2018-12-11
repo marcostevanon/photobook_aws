@@ -8,23 +8,175 @@
     <title>PhotoContest - Stevanon</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
         crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <link rel="icon" href="res/favicon.png" />
-    <style>.card {display:inline-block;}</style>
+
+    <!--page css-->
+    <style>
+        .card {display:inline-block;}
+        @media only screen and (max-width: 500px) {
+            .card-dim{width: 100%;}
+        }
+        @media only screen and (min-width: 500px) {
+            .card-dim{width: 18rem;}
+        }
+    </style>
+
+    <!--Spinner-->
+    <style>
+        .lds-spinner {
+            color: official;
+            display: inline-block;
+            position: relative;
+            width: 64px;
+            height: 64px;
+        }
+            .lds-spinner div {
+            transform-origin: 32px 32px;
+            animation: lds-spinner 1.2s linear infinite;
+        }
+            .lds-spinner div:after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 3px;
+            left: 29px;
+            width: 5px;
+            height: 14px;
+            border-radius: 20%;
+            background: #000;
+        }
+            .lds-spinner div:nth-child(1) {
+            transform: rotate(0deg);
+            animation-delay: -1.1s;
+            }
+            .lds-spinner div:nth-child(2) {
+            transform: rotate(30deg);
+            animation-delay: -1s;
+            }
+            .lds-spinner div:nth-child(3) {
+            transform: rotate(60deg);
+            animation-delay: -0.9s;
+            }
+            .lds-spinner div:nth-child(4) {
+            transform: rotate(90deg);
+            animation-delay: -0.8s;
+            }
+            .lds-spinner div:nth-child(5) {
+            transform: rotate(120deg);
+            animation-delay: -0.7s;
+            }
+            .lds-spinner div:nth-child(6) {
+            transform: rotate(150deg);
+            animation-delay: -0.6s;
+            }
+            .lds-spinner div:nth-child(7) {
+            transform: rotate(180deg);
+            animation-delay: -0.5s;
+            }
+            .lds-spinner div:nth-child(8) {
+            transform: rotate(210deg);
+            animation-delay: -0.4s;
+            }
+            .lds-spinner div:nth-child(9) {
+            transform: rotate(240deg);
+            animation-delay: -0.3s;
+            }
+            .lds-spinner div:nth-child(10) {
+            transform: rotate(270deg);
+            animation-delay: -0.2s;
+            }
+            .lds-spinner div:nth-child(11) {
+            transform: rotate(300deg);
+            animation-delay: -0.1s;
+            }
+            .lds-spinner div:nth-child(12) {
+            transform: rotate(330deg);
+            animation-delay: 0s;
+            }
+            @keyframes lds-spinner {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+            }
+
+    </style>
+
+    <!--LOGIN-->
+    <style>
+        @media screen and (min-width: 700px) {
+            .login-margin {
+                margin-top: 70px;
+            }
+        }
+
+        @media screen and (max-width: 700px) {
+            .login-margin {
+                margin-top: 30px;
+            }
+        }
+
+        .login-margin {
+            margin-bottom: 30px;
+        }
+
+        .login-container {
+            box-shadow: 0 0 8px 3px #888888;
+            width: 300px;
+            margin: auto;
+            border-radius: 3px;
+        }
+
+        .loader {
+            margin: 5px auto;
+            /* Light grey */
+            border: 5px solid #f3f3f3;
+            /* Blue */
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
     <script>
-        const URL = "http://localhost:3000";
+        const URL = "http://ec2-34-244-16-77.eu-west-1.compute.amazonaws.com:5671";
 
         function fetch_gallery() {
-            fetch(URL + '/gallery')
+            if (!sessionStorage.getItem('token'))
+                return goto_login();
+
+            fetch(URL + '/gallery?user_id=' + JSON.parse(sessionStorage.getItem('user')).id, { headers: { 'x-access-token': sessionStorage.getItem('token') } })
                 .then(res => res.json())
                 .then(res => {
+                    console.log(res);
+                    $('#login').hide();
+                    $('#images-list').html('');
+
                     res.forEach(img => {
                         $('#images-list').append(`
-                        <div class="card mt-2" style="width: 18rem;">
+                        <div class="card mt-2 card-dim">
                             <img class="card-img-top" src="${img.url}" alt="">
                             <div class="card-body pt-2">
                                 <div class="card-title">Uploaded by ${img.user}</div>
+
                                 <div class="container-fluid">
-                                    <div class="row">
+                                    <div class="row" id="vote-form-${img.id}">
                                         <div class="col-8 p-0">
                                             <select id="select-${img.id}" class="custom-select">
                                                 <option selected="">Vote!</option>
@@ -36,87 +188,299 @@
                                             </select>
                                         </div>
                                         <div class="col-4 pr-0">
-                                            <button class="btn btn-outline-primary btn-block" onclick="vote-${img.id}">Send</button>
+                                            <button class="btn btn-outline-primary btn-block" onclick="vote(${img.id})">Send</button>
+                                        </div>
+                                        <div id="msg-${img.id}" class="col-12 pr-0 alert alert-danger form-group mt-3 mb-1 p-0 text-center" style="display:none" role="alert">
+                                            Seleziona un voto
                                         </div>
                                     </div>
+                                    
+                                    <div class="row text-center" id="rating-${img.id}" style="display: none">
+                                        <div class="col-6 p-0" id="nvotes-${img.id}"># votes: ${img.n_votes}</div>
+                                        <div class="col-6 p-0" id="avgvotes-${img.id}">Rating: ${img.avg_votes}</div>
+                                    </div>
                                 </div>
+                                
                             </div>
                         </div>`);
+                        if (img.vote) {
+                            $('#vote-form-' + img.id).hide();
+                            $('#rating-' + img.id).show();
+                        }
                     });
+                })
+                .catch(err => {
+                    console.log(err);
+                    return goto_login()
                 });
         }
 
-        function swap(tab) {
-            switch (tab) {
-                case 'gallery':
-                    $('.component').hide();
-                    $('#gallery').show();
+        $(document).ready(() => {
+            $('#upload-form').on('submit', e => {
+                e.preventDefault();
 
-                    $('.nav-item').removeClass('active');
-                    $('#gallery-link').addClass('active');
-                    break;
-                case 'upload':
-                    $('.component').hide();
-                    $('#upload').show();
+                var file = e.target[0].files[0];
+                var data = new FormData();
+                data.append('image', file);
+                data.append('originalname', file.name);
+                data.append('user', JSON.parse(sessionStorage.getItem('user')).username);
 
-                    $('.nav-item').removeClass('active');
-                    $('#upload-link').addClass('active');
-                    break;
-                case 'login':
-                    $('.component').hide();
-                    $('#login').show();
+                $('#upload-form').hide();
+                $('#upload-spinner').show();
+                $('#upload-message').html('');
 
-                    $('.nav-item').removeClass('active');
-                    $('#login-link').addClass('active');
-                    break;
+                fetch(URL + '/upload',
+                    { method: 'POST', body: data, contentType: 'multipart/form-data', headers: { 'x-access-token': sessionStorage.getItem('token') } })
+                    .then(res => {
+                        $('#upload-form').show();
+                        $('#upload-spinner').hide();
+                        $('#form-file-input').val('');
+
+                        $('#upload-message').html('<code style="color:green;">File uploaded successfully!</code>');
+                        fetch_gallery();
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        $('#upload-form').show();
+                        $('#upload-spinner').hide();
+
+                        $('#upload-message').html(`<code style="color:red;">An error occurred!</code>`);
+                        fetch_gallery();
+                    })
+            });
+
+            $('#login-form').on('submit', e => {
+                e.preventDefault();
+
+                $('#login-loader').show();
+                $('#login-label').hide();
+                $('#login-alert').hide();
+
+                fetch(URL + '/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: $('#username').val(),
+                        password: $('#password').val()
+                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        sessionStorage.setItem('token', res.token)
+                        sessionStorage.setItem('user', JSON.stringify(res.user))
+                        $('#login-loader').hide();
+                        $('#login-label').show();
+                        $('#login-alert').hide();
+
+                        $('#section').show();
+                        fetch_gallery();
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        $('#login-loader').hide();
+                        $('#login-label').show();
+                        $('#login-alert').show();
+                        $('#login-alert').html(err);
+                    })
+            });
+        });
+
+        function goto_login() {
+            $('#section').hide();
+            $('#login').show();
+        }
+
+        function vote(id_img) {
+            var vote = parseInt($('#select-' + id_img).val());
+            if (!vote) $('#msg-' + id_img).show();
+            else {
+                $('#msg-' + id_img).hide();
+                $('#vote-form-' + id_img).hide();
+                $('#rating-' + id_img).show();
+
+                var nvotes = parseInt($('#nvotes-' + id_img).text().split(':')[1]);
+                $('#nvotes-' + id_img).html('# votes: ' + (nvotes + 1));
+                $('#nvotes-' + id_img).show();
+
+                var avg = parseInt($('#avgvotes-' + id_img).text().split(':')[1]);
+                $('#avgvotes-' + id_img).html('Rating: ' + (avg + vote) / (nvotes + 1));
+                $('#avgvotes-' + id_img).show();
+
+                console.log({
+                    image_id: id_img,
+                    user_id: JSON.parse(sessionStorage.getItem('user')).id,
+                    vote_value: vote
+                });
+
+                fetch(URL + '/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: $('#username').val(),
+                        password: $('#password').val()
+                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                fetch(URL + '/vote', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        image_id: id_img,
+                        user_id: JSON.parse(sessionStorage.getItem('user')).id,
+                        vote_value: vote
+                    }),
+                    headers: { 'x-access-token': sessionStorage.getItem('token'), 'Content-Type': 'application/json' }
+                })
             }
         }
     </script>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Photo Contest</a>
+    <div class="lds-spinner" id="main-loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <script>$('#main-loader').hide();</script>
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <div id="section">
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active" id="gallery-link">
-                    <a class="nav-link" href="#" onclick="swap('gallery')">Gallery</a>
-                </li>
-                <li class="nav-item" id="upload-link">
-                    <a class="nav-link" href="#" onclick="swap('upload')">Upload</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav my-2 my-lg-0">
-                <li class="nav-item" id="login-link">
-                    <a class="nav-link p-0" href="#" onclick="swap('login')">Login</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+        <div class="card mt-2 card-dim" hidden>
+            <div class="card-body pt-2">
+                <div class="card-title">Uploaded by marco</div>
 
-    <div class="container-fluid">
-        <div class="row component" id="gallery">
-            <div class="col-12">
-                <div id="images-list"></div>
-                <script>fetch_gallery()</script>
+                <div class="container-fluid">
+                    <div class="row">
+
+                        <div class="col-12 set-vote" id="${img.user}" onclick="">
+                            Please vote:&nbsp;&nbsp;
+                            <i class="fas fa-star 1"></i>
+                            <i class="far fa-star 2"></i>
+                            <i class="far fa-star 3"></i>
+                            <i class="far fa-star 4"></i>
+                            <i class="far fa-star 5"></i>
+                        </div>
+
+                        <div class="col-12">
+                            Please vote:&nbsp;&nbsp;
+                            <i class="fas fa-star 1"></i>
+                            <i class="far fa-star 2"></i>
+                            <i class="far fa-star 3"></i>
+                            <i class="far fa-star 4"></i>
+                            <i class="far fa-star 5"></i>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
-        <div class="row component" id="upload">
-            <div class="col-12"></div>
-        </div>
-        <div class="row component" id="login">
-            <div class="col-12"></div>
+
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">Photo Contest</a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto"></ul>
+                <ul class="navbar-nav my-2 my-lg-0">
+                    <li class="nav-item" style="color: white; display: inline;">
+                        <div id="username-nav"></div>
+                        <script>
+                            $('#username-nav').html('Hi, ' + JSON.parse(sessionStorage.getItem('user')).username + '&nbsp;&nbsp;&bull;&nbsp;&nbsp;')
+                        </script>
+                    </li>
+                    <li class="nav-item" id="login-link">
+                        <a class="nav-link p-0" href="#" onclick="sessionStorage.clear(); $('#login').show(); $('#section').hide()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row component" id="gallery">
+                <div class="col-12 mb-3"><br>
+                    <form id="upload-form">
+                        <input id="form-file-input" type="file" name="image" enctype="multipart/form-data" />
+                        <input id="form-file-submit" type="submit" value="Upload" class="btn btn-outline-success btn-sm" />
+                    </form>
+                    <div id="upload-message"></div>
+                    <div class="lds-spinner" id="upload-spinner">
+                        Uploading...
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <script>$('#upload-spinner').hide();</script>
+                </div>
+
+                <div class="col-12">
+                    <div id="images-list"></div>
+                    <script>fetch_gallery()</script>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
+    <div class="row component" id="login">
+        <div class="col-12">
+
+            <div class="container-fluid login-margin">
+                <div class="login-container p-3">
+                    <div class="row p-2 text-center">
+                        <div class="col-12">
+                            <h4>Login</h4>
+                        </div>
+                    </div>
+
+                    <form id="login-form">
+                        <div class="form-group">
+                            <input type="text" id="username" name="username" placeholder="Username" class="form-control"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="password" name="password" placeholder="Password" class="form-control"
+                                required>
+                        </div>
+                        <div class="form-group my-2">
+                            <button type="submit" class="btn btn-block btn-primary">
+                                <div class="loader" id="login-loader"></div>
+                                <div id="login-label">Login</div>
+                            </button>
+                        </div>
+                        <div class="alert alert-danger form-group mt-3 mb-1 p-0 text-center" role="alert" id="login-alert"></div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                $('#login-loader').hide();
+                $('#login-label').show();
+                $('#login-alert').hide();
+            </script>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
