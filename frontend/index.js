@@ -1,5 +1,5 @@
-const URL = "http://localhost:5671";
-// const URL = "http://ec2-34-244-16-77.eu-west-1.compute.amazonaws.com:5671";
+// const URL = "http://localhost:5671";
+const URL = "http://ec2-34-244-16-77.eu-west-1.compute.amazonaws.com:5671";
 
 //if (!sessionStorage.getItem('token')) sessionStorage.clear();
 
