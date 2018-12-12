@@ -9,7 +9,7 @@ router.get('/', verifyToken, async (req, res) => {
             SELECT images.id as id, username as user, images.url, images.n_votes, images.avg_votes, votes.id as vote
             FROM tsac18_stevanon.images
                 JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
-                LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND tsac18_stevanon.users.id = $1
+                LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND votes.id_user = $1
             ORDER BY images.id DESC;;`, [req.query.user_id]);
     await client.end();
     if (rows) res.json(rows.rows);
