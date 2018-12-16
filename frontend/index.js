@@ -1,7 +1,6 @@
 // const URL = "http://localhost:5671";
-const URL = "http://ec2-34-244-16-77.eu-west-1.compute.amazonaws.com:5671";
-
-//if (!sessionStorage.getItem('token')) sessionStorage.clear();
+// const URL = "http://192.168.1.113:5671";
+const URL = "http://ec2-52-215-236-25.eu-west-1.compute.amazonaws.com:5671";
 
 async function fetch_gallery() {
     if (!sessionStorage.getItem('token')) return goto_login();
@@ -12,7 +11,7 @@ async function fetch_gallery() {
     // for each image gets [id, url, user, n_votes, avg_votes, vote]
     // vote can be integer or null. If null, current user didn't vote the image yet
     try {
-        fetch(URL + '/gallery?user_id=' + JSON.parse(sessionStorage.getItem('user')).id, {
+        fetch(URL + '/gallery', {
             headers: { 'x-access-token': sessionStorage.getItem('token') }
         }).then(res => res.json())
             .then(res => {
@@ -75,7 +74,47 @@ async function fetch_gallery() {
                 console.log(err);
                 return goto_login()
             });
+
+
+        fetch_ranking();
+
     } catch (e) { goto_login() }
+}
+
+function fetch_ranking() {
+    fetch(URL + '/gallery/rating', {
+        headers: { 'x-access-token': sessionStorage.getItem('token') }
+    }).then(res => res.json())
+        .then(res => {
+            $('#rating-list').html('');
+            res.forEach(img => {
+                $('#rating-list').append(`
+                    <div class="card mt-2 card-dim">
+                        <img class="card-img-top" src="${img.url}" alt="">
+                        <div class="card-body pt-2">
+                            <div class="card-title">Uploaded by ${img.user}</div>
+
+                            <div class="container-fluid">
+                                <div class="col-12 p-0 text-center" id="rank-vote-rating-${img.id}">
+                                    <div id="rank-vote-avg-${img.id}" style="display: inline-block">${img.avg_votes}</div>&nbsp;
+                                    <div id="rank-vote-star-${img.id}" style="display: inline-block"></div>
+                                    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+                                    <div id="rank-vote-num-${img.id}" style="display: inline-block">${img.n_votes}</div> votes
+                                </div>
+                            </div>
+                        </div>
+                    </div>`);
+
+                for (var i = 0; i < img.avg_votes; i++)
+                    $('#rank-vote-star-' + img.id).append('<i class="fas fa-star"></i>');
+                for (var i = 0; i < 5 - img.avg_votes; i++)
+                    $('#rank-vote-star-' + img.id).append('<i class="far fa-star"></i>');
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            return goto_login()
+        });
 }
 
 function setNavUsername() {
@@ -118,6 +157,11 @@ function vote(id_img) {
             }),
             headers: { 'x-access-token': sessionStorage.getItem('token'), 'Content-Type': 'application/json' }
         })
+            .then(res => {
+                console.log(res);
+                fetch_ranking()
+            })
+            .catch(err => { console.log(err); })
     }
 }
 

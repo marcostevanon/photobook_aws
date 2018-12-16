@@ -29,7 +29,7 @@ router.post('/', verifyToken, upload.single("image"), (req, res) => {
         msg.url = imageUrl;
         console.log(imageUrl);
 
-        const client = new Client(require('../config/pg.config'));
+        const client = new Client(require('../config/pg.config').pg);
         await client.connect();
         await client.query(`INSERT INTO "tsac18_stevanon".images (id_user, url) VALUES ($1, $2)`, [req.token.id, imageUrl]);
         await client.end();

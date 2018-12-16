@@ -9,7 +9,7 @@ const auth = require('../config/auth.config');
 const { Client } = require("pg");
 
 router.post('/login', async (req, res) => {
-    const client = new Client(require('../config/pg.config'));
+    const client = new Client(require('../config/pg.config').pg);
     await client.connect();
 
     const db_query = `SELECT * FROM tsac18_stevanon.users WHERE username = $1;`,
