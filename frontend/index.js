@@ -1,6 +1,6 @@
 // const URL = "http://localhost:5671";
 // const URL = "http://192.168.1.113:5671";
-const URL = "http://ec2-52-215-236-25.eu-west-1.compute.amazonaws.com:5671";
+const URL = "http://ec2-63-33-232-170.eu-west-1.compute.amazonaws.com:5671";
 
 async function fetch_gallery() {
     if (!sessionStorage.getItem('token')) return goto_login();

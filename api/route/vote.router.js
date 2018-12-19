@@ -11,6 +11,7 @@ router.post('/', verifyToken, async (req, res) => {
     const client = new Client(require('../config/pg.config').pg);
 
     await client.connect();
+    await client.query('BEGIN;');
     let rows = await client.query(`INSERT INTO tsac18_stevanon.votes (id_image, id_user, value) 
                                     VALUES ($1, $2, $3)`, args);
 
@@ -38,6 +39,7 @@ router.post('/', verifyToken, async (req, res) => {
         rds_client.quit();
     });
 
+    await client.query('COMMIT;');
     await client.end();
     
     if (rows) res.json(rows.rows);

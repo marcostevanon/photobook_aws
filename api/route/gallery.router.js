@@ -10,13 +10,12 @@ router.get('/', verifyToken, async (req, res) => {
                FROM tsac18_stevanon.images
                    JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
                    LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND votes.id_user = $1
-               ORDER BY images.id DESC;`, [req.token.id]);
+               ORDER BY images.id DESC LIMIT 40;`, [req.token.id]);
     if (rows) res.json(rows.rows);
     else res.sendStatus(500);
 });
 
 router.get('/rating', async (req, res) => {
-
     var rds_client = redis.createClient(redis_options);
     rds_client.on("error", err => console.log("Error " + err));
     rds_client.get("rating", async (err, reply) => {
