@@ -1,8 +1,8 @@
 let router = require('express').Router();
-const pg = require('../config/pg.config')
+const pg = require('../config/pg.config');
 const verifyToken = require('./auth');
 const redis = require('redis');
-const redis_options = require('../config/redis.config')
+const redis_options = require('../config/redis.config');
 
 router.get('/', verifyToken, async (req, res) => {
     let rows = await pg.query(`
@@ -10,7 +10,7 @@ router.get('/', verifyToken, async (req, res) => {
                FROM tsac18_stevanon.images
                    JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
                    LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND votes.id_user = $1
-               ORDER BY images.id DESC LIMIT 40;`, [req.token.id]);
+               ORDER BY images.id DESC --LIMIT 40;`, [req.token.id]);
     if (rows) res.json(rows.rows);
     else res.sendStatus(500);
 });
@@ -26,13 +26,15 @@ router.get('/rating', async (req, res) => {
         else {
             try {
                 let rows = await pg.query(`
-                        SELECT DISTINCT images.id as id, username as user, images.url, images.n_votes, images.avg_votes
-                        FROM tsac18_stevanon.images
-                            JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
-                            LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image
-                        WHERE images.n_votes > 0
-                        ORDER BY images.avg_votes DESC, images.n_votes DESC
-                        LIMIT 3;`);
+                SELECT DISTINCT images.id, users.username as "user", images.url, images.n_votes, images.avg_votes,
+                                ($1 * images.avg_votes) + ($2 * images.n_votes) as score
+                FROM tsac18_stevanon.images
+                    JOIN tsac18_stevanon.users ON images.id_user = users.id
+                    LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image
+                WHERE n_votes > 0
+                ORDER BY score DESC
+                LIMIT 3;`, [3, 1]); //3 = weigth for vote average for every image
+                                    //1 = weigth for the number of votes for every image
                 res.json(rows.rows);
             } catch (e) {
                 res.sendStatus(500);
