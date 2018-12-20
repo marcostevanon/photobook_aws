@@ -69,6 +69,7 @@ async function fetch_gallery() {
 
                 $('#main-loader').hide();
                 $('#gallery').show();
+                swap('list');
             })
             .catch(err => {
                 console.log(err);
@@ -239,6 +240,17 @@ $('#upload-form').on('submit', e => {
             $('#upload-message').html(`<code style="color:red;">An error occurred!</code>`);
         })
 });
+
+function swap(component) {
+    if (component == 'list') {
+        $('#list').show();
+        $('#rank').hide();
+    } else if (component == 'rank') {
+        $('#list').hide();
+        $('#rank').show();
+    }
+
+}
 
 fetch_gallery()
 setNavUsername();

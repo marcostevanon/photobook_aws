@@ -46,7 +46,14 @@
             <a class="navbar-brand" href="#">Photo Contest</a>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto"></ul>
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#" onclick="swap('list')">Gallery</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#" onclick="swap('rank')">Ranking</a>
+                    </li>
+                </ul>
                 <ul class="navbar-nav my-2 my-lg-0">
 
                     <!-- Username -->
@@ -62,25 +69,17 @@
             </div>
         </nav>
 
-        <div class="container-fluid">
+        <div id="list" class="container-fluid">
             <div class="row">
-                <div class="col-12 mb-3">
-
-                    <!-- Rating List -->    
-                    <h4>Ranking</h4>
-                    <div class="col-12" id="rating-list"></div>
-                </div>
-
-                <hr>
-
-                <div class="col-12 my-3">
+                <div class="col-12 my-5 text-center">
 
                     <!-- Upload Form -->
-                    <form id="upload-form">
+                    <form id="upload-form" class="upload-border" style="display: inline-block">
                         <input id="upload-form-input" type="file" name="image" enctype="multipart/form-data" />
                         <input id="upload-form-submit" type="submit" value="Upload" class="btn btn-outline-success btn-sm" />
+
+                        <div id="upload-message"></div>
                     </form>
-                    <div id="upload-message"></div>
 
                     <!-- Upload Loader -->
                     <div class="lds-spinner" id="upload-spinner" style="display: none">
@@ -104,6 +103,17 @@
                 <!-- Images List -->
                 <h4 class="ml-3">Gallery</h4>
                 <div class="col-12" id="images-list"></div>
+            </div>
+        </div>
+
+        <div id="rank" class="container-fluid">
+            <div class="row">
+                <div class="col-12 mb-3 text-center">
+
+                    <!-- Rating List -->
+                    <h4>Ranking</h4>
+                    <div class="col-12" id="rating-list"></div>
+                </div>
             </div>
         </div>
     </div>
