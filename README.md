@@ -35,9 +35,9 @@ Collegatevi al seguente link:
 ## FUNZIONI
 
 ### REGISTER NEW USER
-> `REQUEST` => LAMBDA => RDS
+> `REQUEST` => API => RDS
 
-Il client invia una richiesta API ad una funzione `LAMBDA`, inviando:
+Il client invia una richiesta API ad un server REST, inviando:
 - email
 - username
 - password
@@ -48,13 +48,13 @@ NB: Un nuovo utente può visualizzare le foto caricate da altri utenti e votarle
 ---
 
 ### LOGIN
-> `REQUEST` => LAMBDA *(jwt)* => RDS
+> `REQUEST` => API *(jwt)* => RDS
 
-Il client invia una richiesta API ad una funzione `LAMBDA`, inviando:
+Il client invia una richiesta API ad un server REST, inviando:
 - username
 - password (cifrata)
 
-La funzione `LAMBDA` controlla la validità dei dati inseriti e restituisce un tocken di accesso in caso i dati inseriti siano corrispondenti ad utente registrato<br>
+Il server REST controlla la validità dei dati inseriti e restituisce un token di accesso in caso i dati inseriti siano corrispondenti ad utente registrato<br>
 Il token contiene i seguenti valori:
 - user id
 - username
@@ -62,9 +62,9 @@ Il token contiene i seguenti valori:
 ---
 
 ### SHOW GALLERY
-> `REQUEST` => LAMBDA => REDIS *(get)*
+> `REQUEST` => API => REDIS *(get)*
 
-Il client invia una richiesta API ad una funzione `LAMBDA`<br>
+Il client invia una richiesta API ad un server REST<br>
 Viene restituita la lista di pagine della galleria, la lista di foto per la pagina selezionata e relativi dati (da redis)
 - lista pagine
 - lista foto per pagina
@@ -72,31 +72,30 @@ Viene restituita la lista di pagine della galleria, la lista di foto per la pagi
 ---
 
 ### SHOW RATING
-> `REQUEST` => LAMBDA => REDIS *(get)*
+> `REQUEST` => API => REDIS *(get)*
 
-Il client invia una richiesta API ad una funzione `LAMBDA`<br>
+Il client invia una richiesta API ad un server REST<br>
 Viene restituita la classifica delle 5 foto più votate (da redis)
 - lista 5 foto più votate
 
 ---
 
-### INSERT PHOTO
-> `CLIENT REQUEST` => LAMBDA => S3 => CLOUDFRONT => RDS<br>
-> `DETACHED MODE` &nbsp;&nbsp; => LAMBDA => RABBITMQ => EC2 => CLOUDFRONT => RDS *(update)* => REDIS *(set)*
+### UPLOAD PHOTO
+> `CLIENT REQUEST` => API => S3 => CLOUDFRONT => RDS<br>
+> `DETACHED MODE` &nbsp;&nbsp; => API => RABBITMQ => EC2 => CLOUDFRONT => RDS *(update)* => REDIS *(set)*
 
-
-Il client invia una richiesta API ad una funzione `LAMBDA`, inviando:
+Il client invia una richiesta API ad un server REST, inviando:
 - foto
 - utente *(attraverso il token)*
 
 **FASE 1**<br>
-La funzione `LAMBDA` aggiunge la foto originale caricata ad `S3`<br>
+Il server REST carica la foto originale su un bucket `S3`<br>
 In seguito genera il link di `CLOUDFRONT` per accedere all'immagine attraverso CDN amazon<br>
 Infine aggiunge a `RDS` una nuova entry con l'url della nuova immagine e l'utente che l'ha caricata
 
 **FASE 2** *(in background)*<br>
-La funzione `LAMBDA` aggiunge alla coda di RabbitMQ i dati appena inseriti<br>
-Attraverso un servizio in attesa su un'istanza `EC2` le immagini caricate vengono elaborate:
+Il server REST aggiunge alla coda di RabbitMQ i dati appena inseriti<br>
+Attraverso un consumer in attesa su un'istanza `EC2`, le immagini caricate vengono elaborate:
 - riduzione dell'immagine in proporzione con lunghezza massima lato di 1000px
 - generazione qrcode con l'url (`CLOUDFRONT`) dell'immagine ridotta
 - aggiornamento dell'entry di `RDS` con url immagine ridotta e url immagine qrcode
@@ -105,9 +104,9 @@ Attraverso un servizio in attesa su un'istanza `EC2` le immagini caricate vengon
 ---
 
 ### DETELE PHOTO
-> `REQUEST` => LAMBDA => S3 => RDS
+> `REQUEST` => API => S3 => RDS
 
-Il client invia una richiesta API ad una funzione `LAMBDA`<br>
+Il client invia una richiesta API ad un server REST<br>
 In modo atomico vengono eseguite le seguenti operazioni:
 - rimossa la foto originale da `S3`
 - rimossa la foto modificate da `S3`
@@ -116,9 +115,9 @@ In modo atomico vengono eseguite le seguenti operazioni:
 ---
 
 ### VOTE PHOTO
-> `REQUEST` => LAMBDA => RDS => REDIS *(set)*
+> `REQUEST` => API => RDS => REDIS *(set)*
 
-Il client invia una richiesta API ad una funzione `LAMBDA`, inviando:
+Il client invia una richiesta API ad un server REST, inviando:
 - id foto
 - voto inserito
 
