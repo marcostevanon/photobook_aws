@@ -9,8 +9,10 @@ app.use('/gallery', require('./route/gallery.router'));
 app.use('/upload', require('./route/upload.router'));
 app.use('/vote', require('./route/vote.router'))
 
+require('./worker/updateRedisRanking')();
+
 const server = app.listen(5671, () => {
     let host = server.address().address
     let port = server.address().port
     console.log("App listening at http://%s:%s", host, port);
-})
+});
