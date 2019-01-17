@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/marcostevanon/photocontest_aws#readme",
   "dependencies": {
+    "amqplib": "^0.5.3",
     "aws-sdk": "^2.373.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.3",
