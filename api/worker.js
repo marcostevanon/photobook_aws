@@ -1,13 +1,17 @@
 const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg_options = require('./config/pg.config');
 
 const redis = require('redis');
-const redis_options = require('../config/redis.config');
+const redis_options = require('./config/redis.config');
 
-module.exports = async function generateRatingList() {
-    try {
+module.exports.generateRatingList = () => {
+    console.log('Recreating redis cache...');
+    console.time('...done');
+
+    return new Promise(async (resolve, reject) => {
         const pg_client = new Client(pg_options);
-        await pg_client.connect();
+
+        //Select first 5 photos with higer calculated score [score = (1 * image_average_value) + (3 * number_of_votes)]
         const query = `SELECT DISTINCT images.id, users.username as "user", images.raw_image_url as url, images.n_votes, images.avg_votes,
                             ($1 * images.avg_votes) + ($2 * images.n_votes) as score
                         FROM tsac18_stevanon.images
@@ -17,23 +21,28 @@ module.exports = async function generateRatingList() {
                         ORDER BY score DESC
                         LIMIT 5;`;
 
-        const result = await pg_client.query(query, [1, 3]);
-        // 3 = weigth for vote average for every image
-        // 1 = weigth for the number of votes for every image
+        pg_client.connect()
+            .then(() => {
+                return pg_client.query(query, [1, 3]);
+                // 1 = weigth for the number of votes for every image
+                // 3 = weigth for vote average for every image
+            }).then(table => {
+                pg_client.end();
 
-        await pg_client.end();
+                // updating redis
+                var redis_client = redis.createClient(redis_options);
+                redis_client.on("error", err => reject(err));
+                redis_client.set("rating", JSON.stringify(table.rows), args => {
+                    redis_client.quit();
+                    console.timeEnd('...done');
 
-        // updating redis
-        var redis_client = redis.createClient(redis_options);
-        redis_client.on("error", err => console.log("Error " + err));
-        redis_client.set("rating", JSON.stringify(result.rows), args => { redis_client.quit(); });
-
-        return result.rows;
-    } catch (err) {
-        console.log(err);
-        return null;
-    }
+                    resolve(table.rows);
+                });
+            }).catch(err => reject(err));
+    })
 }
+
+// module.exports.generatePaginator = () => { }
 
 
 //create pagination
