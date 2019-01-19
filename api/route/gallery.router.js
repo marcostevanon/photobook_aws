@@ -1,3 +1,4 @@
+'use strict';
 let router = require('express').Router();
 const verifyToken = require('./auth');
 
@@ -6,7 +7,7 @@ const pg_options = require('../config/pg.config');
 
 const redis = require('redis');
 const redis_options = require('../config/redis.config');
-const updateRedisRanking = require('../worker/updateRedisRanking');
+const worker = require('../worker');
 
 // /gallery
 router.get('/', verifyToken, async (req, res) => {
@@ -23,9 +24,13 @@ router.get('/', verifyToken, async (req, res) => {
         await pg_client.end();
 
         if (result) res.json(result.rows);
-        else res.status(500).json({ error: { status: 500, message: "Internal Error" } });
+        else res.status(500).json({
+            error: { status: 500, message: "Internal Error" }
+        });
     } catch (err) {
-        res.status(500).json({ error: { status: 500, message: "Internal Error" } });
+        res.status(500).json({
+            error: { status: 500, message: "Internal Error" }
+        });
     }
 });
 
@@ -34,15 +39,22 @@ router.get('/rating', async (req, res) => {
     var redis_client = redis.createClient(redis_options);
     redis_client.on("error", err => {
         console.log("Redis error " + err);
-        return res.status(500).json({ error: { status: 500, message: "Internal Error, Redis Error" } });
+        // return res.status(500).json({
+        //     error: { status: 500, message: "Internal Error, Redis Error" }
+        // });
     });
 
     redis_client.get("rating", async (err, reply) => {
+        if (err)
+            return res.status(500).json({
+                error: { status: 500, message: "Internal Error, Redis Error" }
+            });
+
         if (JSON.parse(reply)) {
             res.status(200).json(JSON.parse(reply));
             redis_client.quit();
         } else {
-            var result = await updateRedisRanking();
+            var result = await worker.generateRatingList();
             res.status(200).json(result);
         }
     });

@@ -1,15 +1,19 @@
-//Router AUTH
+/**
+ *  /api/auth
+ */
 
 'use strict';
 const router = require('express').Router();
+
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
-const auth = require('../config/auth.config');
+const auth_options = require('../config/auth.config');
 
+// import modules to query postgresql
 const { Client } = require("pg");
 const pg_options = require('../config/pg.config');
 
-// /auth/login
+// /api/auth/login
 router.post('/login', async (req, res) => {
     console.log(`${new Date().toISOString()} ${req.method}\t${req.originalUrl}\t${JSON.stringify(req.body)}`);
 
@@ -20,10 +24,9 @@ router.post('/login', async (req, res) => {
 
     try {
         await client.connect();
-
+        
         // check if user exists
-        var result = await client.query(query, [user]);
-        result = result.rows;
+        var result = await client.query(query, [user]).then(r => r.rows);
         await client.end();
 
         if (!result.length)
@@ -37,8 +40,8 @@ router.post('/login', async (req, res) => {
         // create a token
         var token = jwt.sign(
             { id: result[0].id, username: result[0].username },
-            auth.secret,
-            { expiresIn: 60 * 60 * parseInt(auth.DEF_TOKEN_EXPIRE) }
+            auth_options.secret,
+            { expiresIn: 60 * 60 * parseInt(auth_options.DEF_TOKEN_EXPIRE) }
         );
 
         // return the information including token as JSON
@@ -50,7 +53,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// /auth/signup
+// /api/auth/signup
 router.post('/signup', async (req, res) => {
 
     const username = req.body.username;
