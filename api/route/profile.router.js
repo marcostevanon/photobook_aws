@@ -17,7 +17,7 @@ router.get('/me', verifyToken, (req, res) => {
 
     const pg_client = new Client(pg_options);
     const query = `SELECT id, original_name, title, description, tags,
-                        raw_image_url, resized_image_url, n_votes, avg_votes, timestamp
+                        resized_image_url, resized_image_url, n_votes, avg_votes, timestamp
                     FROM tsac18_stevanon.images
                     WHERE id_user = $1`;
 
@@ -33,7 +33,7 @@ router.get('/me', verifyToken, (req, res) => {
 router.get('/:id', verifyToken, (req, res) => {
 
     const pg_client = new Client(pg_options);
-    const query = `SELECT images.id, users.username, raw_image_url, n_votes, avg_votes, timestamp,
+    const query = `SELECT images.id, users.username, resized_image_url, n_votes, avg_votes, timestamp,
                         resized_image_url, original_name, title, description, tags
                     FROM tsac18_stevanon.images
                         JOIN tsac18_stevanon.users ON images.id_user = users.id

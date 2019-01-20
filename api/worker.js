@@ -12,7 +12,7 @@ module.exports.generateRatingList = () => {
         const pg_client = new Client(pg_options);
 
         //Select first 5 photos with higer calculated score [score = (1 * image_average_value) + (3 * number_of_votes)]
-        const query = `SELECT DISTINCT images.id, users.username as "user", images.raw_image_url as url, images.n_votes, images.avg_votes,
+        const query = `SELECT DISTINCT images.id, users.username as "user", images.resized_image_url as url, images.n_votes, images.avg_votes,
                             ($1 * images.avg_votes) + ($2 * images.n_votes) as score
                         FROM tsac18_stevanon.images
                         JOIN tsac18_stevanon.users ON images.id_user = users.id
@@ -47,7 +47,7 @@ module.exports.generateRatingList = () => {
 
 //create pagination
 // let rows = await client.query(`
-//        SELECT images.id as id, username as user, images.raw_image_url as url, images.n_votes, images.avg_votes, votes.id as vote
+//        SELECT images.id as id, username as user, images.resized_image_url as url, images.n_votes, images.avg_votes, votes.id as vote
 //        FROM tsac18_stevanon.images
 //            JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
 //            LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND votes.id_user = $1
