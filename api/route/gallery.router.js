@@ -18,7 +18,7 @@ const worker = require('../worker');
 router.get('/', verifyToken, async (req, res) => {
     console.time('/api/gallery');
     const pg_client = new Client(pg_options);
-    const query = `SELECT images.id as id, username as user, images.raw_image_url as url, images.n_votes, 
+    const query = `SELECT images.id as id, username as user, images.resized_image_url as url, images.n_votes, 
                         images.avg_votes, votes.id as vote, images.title as title, images.description as description
                     FROM tsac18_stevanon.images
                         JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
