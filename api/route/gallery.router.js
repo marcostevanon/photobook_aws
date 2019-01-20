@@ -2,7 +2,7 @@
  *  /api/gallery
  */
 
- 'use strict';
+'use strict';
 let router = require('express').Router();
 const verifyToken = require('./auth');
 
@@ -65,6 +65,34 @@ router.get('/rating', verifyToken, async (req, res) => {
                 })
         }
     });
+});
+
+// /api/gallery/delete/:image_id
+router.get('/delete/:image_id', verifyToken, async (req, res) => {
+    console.time('/api/gallery/delete/');
+
+    const pg_client = new Client(pg_options);
+    const query = `DELETE FROM tsac18_stevanon.images
+                    WHERE id = $2 AND id_user = $1;`;
+    console.log(req.params.image_id);
+    console.log(req.token.id);
+
+    pg_client.connect()
+        .then(() => pg_client.query(query, [req.token.id, req.params.image_id]))
+        .then(response => {
+            pg_client.end();
+            console.log(response);
+
+            if (response.rowCount) res.sendStatus(200);
+            else res.sendStatus(400);
+
+            console.timeEnd('/api/gallery/delete/');
+        })
+        .then(() => worker.generateRatingList())
+        .catch(err => {
+            res.sendStatus(400);
+            console.log(err);
+        });
 });
 
 module.exports = router;
