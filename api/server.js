@@ -10,6 +10,13 @@ app.use('/auth', require('./route/auth.router'))
 app.use('/gallery', require('./route/gallery.router'));
 app.use('/upload', require('./route/upload.router'));
 app.use('/vote', require('./route/vote.router'))
+app.use('/profile', require('./route/profile.router'))
+
+// app.use('/api/auth', require('./route/auth.router'))
+// app.use('/api/gallery', require('./route/gallery.router'));
+// app.use('/api/upload', require('./route/upload.router'));
+// app.use('/api/vote', require('./route/vote.router'))
+// app.use('/api/profile', require('./route/profile.router'))
 
 setTimeout(() => {
     require('./worker').generateRatingList()
@@ -18,4 +25,4 @@ setTimeout(() => {
                 console.log(`\nApp listening at http://${server.address().address}:${server.address().port}`);
             });
         }).catch(err => console.log(err));
-}, 1/*1000*/);
+}, 1/*10000*/);
