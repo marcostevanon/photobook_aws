@@ -1,4 +1,5 @@
 ### `This app is created for EDUCATIONAL PURPOSE ONLY, the data entered may not be protected and it is recommended not to use real or sensitive data`
+### `Questa app è creata a SOLO SCOPO EDUCATIVO, i dati inseriti potrebbero non essere protetti e si raccomanda di non utilizzare dati reali o sensibili`
 <br>
 
 # PHOTO-CONTEST SERVERLESS
@@ -13,20 +14,21 @@ Collegatevi al seguente link:
 <br>
 
 ## TECNOLOGIE UTILIZZATE
-- AWS
+- CLOUD AWS
     - S3
     - RDS
     - EC2
     - CLOUDFRONT
     - LAMBDA
+    - EMR (prossima imprementazione)
 - BACKEND
     - NODE.JS
     - RABBITMQ
     - REDIS
-    - ELASTICHSEARCH
+    - ELASTICH SEARCH  (prossima imprementazione)
 - FRONTEND
-    - MITHRIL.JS
-    - CONSTRUCT-UI
+    - ANGULAR
+    - SEMANTIC-UI
 ---
 <br>
 
@@ -34,7 +36,7 @@ Collegatevi al seguente link:
 
 ## FUNZIONI
 
-### REGISTER NEW USER
+### REGISTRAZIONE NUOVO UTENTE
 > `REQUEST` => API => RDS
 
 Il client invia una richiesta API ad un server REST, inviando:
@@ -61,7 +63,7 @@ Il token contiene i seguenti valori:
 
 ---
 
-### SHOW GALLERY
+### GALLERIA
 > `REQUEST` => API => REDIS *(get)*
 
 Il client invia una richiesta API ad un server REST<br>
@@ -71,7 +73,7 @@ Viene restituita la lista di pagine della galleria, la lista di foto per la pagi
 
 ---
 
-### SHOW RATING
+### CLASSIFICA
 > `REQUEST` => API => REDIS *(get)*
 
 Il client invia una richiesta API ad un server REST<br>
@@ -80,7 +82,7 @@ Viene restituita la classifica delle 5 foto più votate (da redis)
 
 ---
 
-### UPLOAD PHOTO
+### CARICAMENTO FOTO
 > `CLIENT REQUEST` => API => S3 => CLOUDFRONT => RDS<br>
 > `DETACHED MODE` &nbsp;&nbsp; => API => RABBITMQ => EC2 => CLOUDFRONT => RDS *(update)* => REDIS *(set)*
 
@@ -103,7 +105,7 @@ Attraverso un consumer in attesa su un'istanza `EC2`, le immagini caricate vengo
 
 ---
 
-### DETELE PHOTO
+### CANCELLAZIONE PHOTO
 > `REQUEST` => API => S3 => RDS
 
 Il client invia una richiesta API ad un server REST<br>
@@ -114,7 +116,7 @@ In modo atomico vengono eseguite le seguenti operazioni:
    
 ---
 
-### VOTE PHOTO
+### VOTO FOTO
 > `REQUEST` => API => RDS => REDIS *(set)*
 
 Il client invia una richiesta API ad un server REST, inviando:
@@ -212,6 +214,8 @@ Contiene una form per il caricamento di nuove immagini da parte dell'utente logg
 ---
 
 ## SCREENSHOOT, SHOWCASES AND FLOW SCHEMA
+//TODO
+
 ---
 
 `by Marco Stevanon`

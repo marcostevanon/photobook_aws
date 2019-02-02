@@ -1,5 +1,5 @@
 {
-  "name": "photocontest_aws",
+  "name": "photocontest-serverside",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
