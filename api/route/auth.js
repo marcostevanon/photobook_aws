@@ -1,6 +1,6 @@
 'use strict';
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
-const auth = require('../config/auth.config');
+const auth = require('../../config/auth.config');
 
 /**
  * This function is used as middleware to authenticate api calls to this server

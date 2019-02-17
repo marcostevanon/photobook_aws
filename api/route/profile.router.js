@@ -10,7 +10,7 @@ const verifyToken = require('./auth');
 
 // import modules to query postgresql
 const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg_options = require('../../config/pg.config');
 
 // /api/profile/me
 router.get('/me', verifyToken, (req, res) => {
