@@ -5,7 +5,7 @@ const verifyToken = require('./auth');
 const { Client } = require("pg");
 const pg_options = require('../../config/pg.config');
 
-const worker = require('../worker');
+const worker = require('../workers/redis-worker');
 
 // /api/vote
 router.post('/', verifyToken, async (req, res) => {

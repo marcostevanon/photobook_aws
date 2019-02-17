@@ -12,7 +12,7 @@ const pg_options = require('../../config/pg.config');
 const redis = require('redis');
 const redis_options = require('../../config/redis.config');
 
-const worker = require('../worker');
+const worker = require('../workers/redis-worker');
 
 // /api/gallery
 router.get('/', verifyToken, async (req, res) => {

@@ -12,11 +12,11 @@ app.use(morgan(':date[iso] [:response-time[digits]ms] :remote-addr :method :url 
 app.use('/api/auth', require('./route/auth.router'))
 app.use('/api/gallery', require('./route/gallery.router'));
 app.use('/api/upload', require('./route/upload.router'));
-app.use('/api/vote', require('./route/vote.router'))
-app.use('/api/profile', require('./route/profile.router'))
+app.use('/api/vote', require('./route/vote.router'));
+app.use('/api/profile', require('./route/profile.router'));
 
 setTimeout(() => {
-	require('./worker')
+	require('./workers/redis-worker')
 		.generateRatingList()
 		.then(() => {
 			const server = app.listen(5671, () => {

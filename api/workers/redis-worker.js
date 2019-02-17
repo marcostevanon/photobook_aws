@@ -1,8 +1,8 @@
 const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg_options = require('../../config/pg.config');
 
 const redis = require('redis');
-const redis_options = require('../config/redis.config');
+const redis_options = require('../../config/redis.config');
 
 module.exports.generateRatingList = () => {
     console.time('Redis cache recreated');

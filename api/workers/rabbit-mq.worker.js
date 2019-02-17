@@ -1,13 +1,13 @@
 const mq = require('amqplib');
-const mq_options = require('../config/mq.config.js');
+const mq_options = require('../../config/mq.config.js');
 
 var request = require('request');
 var sharp = require('sharp');
 
-const s3 = require('../config/s3.config');
+const s3 = require('../../config/s3.config');
 
 const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg_options = require('../../config/pg.config');
 
 var queue = 'photo_processing';
 setTimeout(() => startListening(), 1);
