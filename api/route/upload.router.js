@@ -11,15 +11,18 @@ const uuid = require('uuid/v1');
 // import modules to upload files on AWS S3
 const multer = require('multer');
 var upload = multer({ storage: multer.memoryStorage() });
-const s3 = require('../config/s3.config');
+const s3 = require('../../config/s3.config');
 
 // import modules to query postgresql
 const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg_options = require('../../config/pg.config');
 
 // import modules to call rabbitmq
 const mq = require('amqplib');
-const mq_options = require('../config/mq.config.js');
+const mq_options = require('../../config/mq.config.js');
+
+const azure = require('../../config/azure.config');
+const request = require("request");
 
 // /api/upload
 router.post('/', verifyToken, upload.single("image"), (req, res) => {
@@ -65,7 +68,7 @@ router.post('/', verifyToken, upload.single("image"), (req, res) => {
                 var queue = 'photo_processing';
                 mq.connect(mq_options)
                     .then(conn => conn.createChannel())
-                    .then(ch => ch.assertQueue(queue)
+                    .then(ch => ch.assertQueue(queue, { persistent: true })
                         .then(ok => ch.sendToQueue(queue, Buffer.from(JSON.stringify(msg)))))
                     .then(console.timeEnd('/api/upload'))
                     .catch(console.warn);
@@ -78,5 +81,38 @@ function createCloudfrontURL(data) {
     url[2] = s3.cloudfrontURL;
     return url.join('/');
 }
+
+router.get('/check/:photo_id', verifyToken, (req, res) => {
+    const pg_client = new Client(pg_options);
+    const query = `SELECT resized_image_url, status FROM tsac18_stevanon.images WHERE id = $1;`;
+
+    pg_client.connect()
+        .then(() => pg_client.query(query, [req.params.photo_id]))
+        .then(response => {
+            pg_client.end();
+            if (response.rows.length)
+                res.json(response.rows[0]);
+            else
+                res.sendStatus(404)
+        }).catch(err => console.log(err))
+})
+
+router.post('/cognitive', verifyToken, (req, res) => {
+    request.post({
+        headers: {
+            'Content-Type': 'application/json',
+            "Ocp-Apim-Subscription-Key": azure.cognitiveKey
+        },
+        url: 'http://northeurope.api.cognitive.microsoft.com/vision/v2.0/describe',
+        body: JSON.stringify({ url: req.body.url })
+    }, (error, response, body) => {
+        if (error) return res.status(400).json(error)
+
+        res.json(body);
+        console.log(body);
+        console.log(error);
+    });
+})
+
 
 module.exports = router;
