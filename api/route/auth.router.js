@@ -15,8 +15,6 @@ const pg_options = require('../../config/pg.config');
 
 // /api/auth/login
 router.post('/login', async (req, res) => {
-    console.log(`${new Date().toISOString()} ${req.method}\t${req.originalUrl}\t${JSON.stringify(req.body)}`);
-    console.time('/api/auth/login');
 
     const pg_client = new Client(pg_options);
     const query = `SELECT * FROM tsac18_stevanon.users WHERE username = $1;`;
@@ -28,7 +26,6 @@ router.post('/login', async (req, res) => {
         // check if user exists
         .then(() => pg_client.query(query, [user]).then(r => r.rows))
         .then(table => {
-            console.log(table);
             pg_client.end();
 
             if (!table.length)
@@ -55,7 +52,6 @@ router.post('/login', async (req, res) => {
                 user: { id: table[0].id, username: table[0].username, avatar: table[0].avatar }
             });
             console.log(`Token request by: ${user} - Granted`);
-            console.timeEnd('/api/auth/login');
         })
         .catch(err => {
             console.log(err);
@@ -65,7 +61,6 @@ router.post('/login', async (req, res) => {
 
 // /api/auth/signup
 router.post('/signup', async (req, res) => {
-
 
     const firstname = req.body.firstname;
     const lastname = req.body.lastname;
@@ -84,7 +79,8 @@ router.post('/signup', async (req, res) => {
         .then(result => {
             if (result.rowCount > 0) res.sendStatus(204);
             else res.status(400).send('User already exist');
-        }).then(() => pg_client.end())
+        })
+        .then(() => pg_client.end())
         .catch(err => {
             res.status(400).send('User already exist');
             console.log(err);

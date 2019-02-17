@@ -6,7 +6,6 @@ const auth = require('../../config/auth.config');
  * This function is used as middleware to authenticate api calls to this server
  */
 function verifyToken(req, res, next) {
-  // console.log(`${new Date().toISOString()} ${req.method}\t${req.originalUrl}\t${JSON.stringify(req.body)}`);
 
   // check header for token
   var token = req.headers['x-access-token'];
@@ -23,6 +22,7 @@ function verifyToken(req, res, next) {
     req.token = { id: decoded.id, username: decoded.username };
     next();
   });
+  
 };
 
 module.exports = verifyToken;

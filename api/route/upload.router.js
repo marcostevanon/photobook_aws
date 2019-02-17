@@ -27,8 +27,6 @@ const request = require("request");
 // /api/upload
 router.post('/', verifyToken, upload.single("image"), (req, res) => {
 
-    console.time('/api/upload');
-
     // verifies the tipe of file to upload
     if (req.file.mimetype.split('/')[0] != 'image')
         // if file is not an image, return 400
@@ -70,9 +68,9 @@ router.post('/', verifyToken, upload.single("image"), (req, res) => {
                     .then(conn => conn.createChannel())
                     .then(ch => ch.assertQueue(queue, { persistent: true })
                         .then(ok => ch.sendToQueue(queue, Buffer.from(JSON.stringify(msg)))))
-                    .then(console.timeEnd('/api/upload'))
-                    .catch(console.warn);
-            }).catch(console.log);
+                    .catch(console.log);
+            })
+            .catch(console.log);
     });
 });
 
@@ -94,7 +92,8 @@ router.get('/check/:photo_id', verifyToken, (req, res) => {
                 res.json(response.rows[0]);
             else
                 res.sendStatus(404)
-        }).catch(err => console.log(err))
+        })
+        .catch(console.log)
 })
 
 router.post('/cognitive', verifyToken, (req, res) => {
@@ -106,11 +105,11 @@ router.post('/cognitive', verifyToken, (req, res) => {
         url: 'http://northeurope.api.cognitive.microsoft.com/vision/v2.0/describe',
         body: JSON.stringify({ url: req.body.url })
     }, (error, response, body) => {
-        if (error) return res.status(400).json(error)
-
+        if (error) {
+            console.log(error);
+            return res.status(400).json(error)
+        }
         res.json(body);
-        console.log(body);
-        console.log(error);
     });
 })
 

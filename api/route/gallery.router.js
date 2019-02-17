@@ -16,7 +16,6 @@ const worker = require('../worker');
 
 // /api/gallery
 router.get('/', verifyToken, async (req, res) => {
-    console.time('/api/gallery');
     const pg_client = new Client(pg_options);
     const query = `SELECT 
                         images.id                as post_id,
@@ -36,7 +35,6 @@ router.get('/', verifyToken, async (req, res) => {
                         LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND votes.id_user = $1
                     ORDER BY images.id DESC`;
 
-    console.log(req.token.id);
     pg_client.connect()
         .then(() => pg_client.query(query, [req.token.id]))
         .then(table => {
@@ -44,8 +42,6 @@ router.get('/', verifyToken, async (req, res) => {
 
             if (table) res.status(200).json(table.rows);
             else res.sendStatus(500);
-
-            console.timeEnd('/api/gallery');
         }).catch(err => {
             res.sendStatus(500);
             console.log(err);
@@ -54,24 +50,20 @@ router.get('/', verifyToken, async (req, res) => {
 
 // /api/gallery/ranking
 router.get('/ranking', verifyToken, async (req, res) => {
-    console.time('/api/gallery/ranking');
     var redis_client = redis.createClient(redis_options);
 
     redis_client.on("error", err => console.log(err));
     redis_client.get("ranking", (err, reply) => {
-        console.log(reply);
         if (err) return res.sendStatus(500)
 
         // check if redis cache is ready, otherwise create it
         if (reply) {
             res.status(200).json(JSON.parse(reply));
-            console.timeEnd('/api/gallery/ranking');
             redis_client.quit();
         } else {
             worker.generateRatingList()
                 .then(result => {
                     res.status(200).json(result)
-                    console.timeEnd('/api/gallery/ranking');
                 }).catch(err => {
                     res.sendStatus(500);
                     console.log(err);
@@ -96,40 +88,33 @@ router.post('/edit/:image_id', verifyToken, (req, res) => {
                         tags        = $3
                     WHERE id = $4;`;
 
-    console.log(args);
     pg_client.connect()
         .then(() => pg_client.query(query, args))
         .then(response => {
-            console.log(response);
             pg_client.end();
             if (response.rowCount) {
                 res.sendStatus(201);
             } else {
                 res.sendStatus(404);
             }
-        }).catch(err => console.log(err))
+        })
+        .catch(console.log)
 })
 
 // /api/gallery/:image_id
 router.delete('/:image_id', verifyToken, async (req, res) => {
-    console.time('/api/gallery/delete/');
 
     const pg_client = new Client(pg_options);
     const query = `DELETE FROM tsac18_stevanon.images
                     WHERE id = $2 AND id_user = $1;`;
-    console.log(req.params.image_id);
-    console.log(req.token.id);
 
     pg_client.connect()
         .then(() => pg_client.query(query, [req.token.id, req.params.image_id]))
         .then(response => {
             pg_client.end();
-            console.log(response);
 
             if (response.rowCount) res.sendStatus(200);
             else res.sendStatus(400);
-
-            console.timeEnd('/api/gallery/delete/');
         })
         .then(() => worker.generateRatingList())
         .catch(err => {

@@ -5,8 +5,7 @@ const redis = require('redis');
 const redis_options = require('../config/redis.config');
 
 module.exports.generateRatingList = () => {
-    console.log('Recreating redis cache...');
-    console.time('...done');
+    console.time('Redis cache recreated');
 
     return new Promise(async (resolve, reject) => {
         const pg_client = new Client(pg_options);
@@ -44,7 +43,7 @@ module.exports.generateRatingList = () => {
                 redis_client.on("error", err => reject(err));
                 redis_client.set("ranking", JSON.stringify(table.rows), args => {
                     redis_client.quit();
-                    console.timeEnd('...done');
+                    console.timeEnd('Redis cache recreated');
 
                     resolve(table.rows);
                 });

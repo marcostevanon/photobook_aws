@@ -9,7 +9,6 @@ const worker = require('../worker');
 
 // /api/vote
 router.post('/', verifyToken, async (req, res) => {
-    console.time('/api/vote');
 
     const pg_client = new Client(pg_options);
     pg_client.connect()
@@ -20,7 +19,7 @@ router.post('/', verifyToken, async (req, res) => {
             const query = `INSERT INTO tsac18_stevanon.votes (id_image, id_user, value) VALUES ($1, $2, $3) RETURNING *`;
             return pg_client.query(query, [req.body.image_id, req.body.user_id, req.body.value])
         })
-        .then((db) => console.log(`Write ${db.rowCount} row`))
+        // .then((db) => console.log(`Write ${db.rowCount} row`))
 
         // update vote number and vote average on image table
         .then((db) => {
@@ -30,7 +29,7 @@ router.post('/', verifyToken, async (req, res) => {
                         WHERE id = $1`;
             return pg_client.query(query, [req.body.image_id])
         })
-        .then((db) => console.log(`Update ${db.rowCount} row`))
+        // .then((db) => console.log(`Update ${db.rowCount} row`))
         .then(() => pg_client.query('COMMIT;'))
 
         // select new vote values
@@ -44,7 +43,6 @@ router.post('/', verifyToken, async (req, res) => {
 
         // regenerate redis cache
         .then(() => worker.generateRatingList())
-        .then(() => console.timeEnd('/api/vote'))
         .catch((err) => {
             console.log(err)
             res.sendStatus(500);

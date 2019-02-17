@@ -7,7 +7,7 @@ console.log('Inizializing...');
 
 app.use(cors());
 app.use(body_parser.json());
-app.use(morgan(':date[iso] [:response-time[digits]ms] :remote-addr :method :url :status len: :req[content-length] \t :referrer'));
+app.use(morgan(':date[iso] [:response-time[digits]ms] :remote-addr :method :url :status \t :referrer'));
 
 app.use('/api/auth', require('./route/auth.router'))
 app.use('/api/gallery', require('./route/gallery.router'));

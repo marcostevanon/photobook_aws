@@ -26,7 +26,8 @@ router.get('/me', verifyToken, (req, res) => {
         .then(table => {
             res.json(table.rows);
             pg_client.end();
-        }).catch(console.log);
+        })
+        .catch(console.log);
 })
 
 // /api/profile/:id
