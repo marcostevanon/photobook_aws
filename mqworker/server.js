@@ -17,6 +17,7 @@ function startListening() {
         .then(conn => conn.createChannel())
         .then(ch => ch.assertQueue(queue)
             .then(ok => {
+                console.log(ok);
                 return ch.consume(queue, msg =>
                     createThumbnail(JSON.parse(msg.content.toString()))
                         .then(() => ch.ack(msg))
@@ -36,7 +37,7 @@ function createThumbnail(msg) {
                     width: 500,
                     height: 500,
                     fit: 'contain',
-                    background: { r: 255, g: 255, b: 255, alpha: 1 }
+                    background: { r: 255, g: 255, b: 255, alpha: 0.88 }
                 })
                 // .toFile('output.jpg')
                 .toBuffer()
@@ -47,7 +48,7 @@ function createThumbnail(msg) {
                         const params = s3.uploadParams;
                         params.Body = buffer;
                         params.Key = `images/thumbnail/${msg.uuid}.thumb.${msg.filename}`;
-                        //file key will be --> image/thumbnail/{unique_identifier}.thumb.{originalfilename}.{originalextention}
+                        //file key will be --> images/thumbnail/{unique_identifier}.thumb.{originalfilename}.{originalextention}
 
                         s3.s3Client.upload(params, (err, data) => {
                             if (err) reject(err)
@@ -65,13 +66,16 @@ function createThumbnail(msg) {
                                     SET resized_image_url = $1, status = $2
                                     WHERE id = $3`;
                     var args = [imageUrl, 'uploaded', msg.image_id];
-                    pg_client.connect()
-                        .then(() => pg_client.query(query, args))
-                        .then(() => {
-                            pg_client.end();
-                            console.timeEnd('thumb');
-                            resolve(res)
-                        }).catch(console.log);
+                    setTimeout(() => {
+                        pg_client.connect()
+                            .then(() => pg_client.query(query, args))
+                            .then(() => {
+                                pg_client.end();
+                                console.timeEnd('thumb');
+                                resolve(res)
+                            }).catch(console.log);
+                    }, 5000)
+
                 })
                 .catch(err => {
                     reject(err);
