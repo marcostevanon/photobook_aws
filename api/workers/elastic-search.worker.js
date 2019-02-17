@@ -36,6 +36,7 @@ function updateImagesIndeces() {
         pg_client.connect()
             .then(() => pg_client.query(query))
             .then(table => {
+                pg_client.end()
 
                 table.rows.forEach(item => {
                     newImagesArray_bulk.push({
@@ -62,7 +63,7 @@ function updateImagesIndeces() {
 function updateUsersIndeces() {
     return new Promise((resolve, reject) => {
         const pg_client = new Client(pg_options);
-        const query = `SELECT DISTINCT id, username, firstname, lastname
+        const query = `SELECT DISTINCT id, username, firstname, lastname, avatar
                     FROM tsac18_stevanon.users`;
 
         var newUsersArray_bulk = [];
@@ -70,6 +71,7 @@ function updateUsersIndeces() {
         pg_client.connect()
             .then(() => pg_client.query(query))
             .then(table => {
+                pg_client.end()
 
                 table.rows.forEach(item => {
                     newUsersArray_bulk.push({
