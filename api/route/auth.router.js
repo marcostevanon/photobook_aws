@@ -81,6 +81,7 @@ router.post('/signup', async (req, res) => {
             else res.status(400).send('User already exist');
         })
         .then(() => pg_client.end())
+        .then(() => { require('../workers/elastic-search.worker').updateUsersIndeces() })
         .catch(err => {
             res.status(400).send('User already exist');
             console.log(err);

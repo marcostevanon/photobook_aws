@@ -14,10 +14,12 @@ app.use('/api/gallery', require('./route/gallery.router'));
 app.use('/api/upload', require('./route/upload.router'));
 app.use('/api/vote', require('./route/vote.router'));
 app.use('/api/profile', require('./route/profile.router'));
+app.use('/api/search', require('./route/search.router'));
 
 setTimeout(() => {
-	require('./workers/redis-worker')
-		.generateRatingList()
+	require('./workers/redis-worker').generateRatingList()
+		.then(() => { require('./workers/elastic-search.worker').updateImagesIndeces() })
+		.then(() => { require('./workers/elastic-search.worker').updateUsersIndeces() })
 		.then(() => {
 			const server = app.listen(5671, () => {
 				console.log(`\nApp listening at http://${server.address().address}:${server.address().port}`);

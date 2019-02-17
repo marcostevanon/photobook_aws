@@ -98,6 +98,7 @@ router.post('/edit/:image_id', verifyToken, (req, res) => {
                 res.sendStatus(404);
             }
         })
+        .then(() => { require('../workers/elastic-search.worker').updateImagesIndeces() })
         .catch(console.log)
 })
 
