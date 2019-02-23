@@ -1,14 +1,14 @@
-### `This app is created for EDUCATIONAL PURPOSE ONLY, the data entered may not be protected and it is recommended not to use real or sensitive data`
-### `Questa app è creata a SOLO SCOPO EDUCATIVO, i dati inseriti potrebbero non essere protetti e si raccomanda di non utilizzare dati reali o sensibili`
+> ## This app is created for EDUCATIONAL PURPOSE ONLY, the data entered may not be protected and it is recommended not to use real or sensitive data
+
+> ## Questa app è creata a SOLO SCOPO EDUCATIVO, i dati inseriti potrebbero non essere protetti e si raccomanda di non utilizzare dati reali o sensibili
 <br>
 
-# PHOTO-CONTEST SERVERLESS
-<br>
+# ITS PHOTO CONTEST
 
 ## COME UTILIZZARE
 Collegatevi al seguente link:
 [photocontest.marcostevanon.ovh](http://photocontest.marcostevanon.ovh)<br>
-*per utilizzare l'app è necessario creare un utente*
+*Per utilizzare l'app è necessario creare un utente*
 
 ---
 <br>
