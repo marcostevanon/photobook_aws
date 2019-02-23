@@ -29,8 +29,6 @@ Vedi anche [frontend](https://github.com/marcostevanon/ITS_PhotoContest-Client)<
 ---
 <br>
 
-
-
 ## FUNZIONI
 
 ### REGISTRAZIONE NUOVO UTENTE
@@ -181,37 +179,6 @@ La lista ordinata di `REDIS` è strutturata nel modo seguente:
 ### ELABORAZIONE DELLE IMMAGINI CARICATE
 Quando un'immagine è caricata correttamente su `S3` e aggiunta a `RDS` viene aggiunta un'operazione alla coda di `RabbitMQ`<br>
 //TODO//
-
----
-<br>
-
-## FRONTEND
-
-### LOGIN
-La pagina login contiene una semplice form per l'accesso all'app con token jwt
-
-### REGISTRATION
-La pagina registration permette di creare un nuovo utente per accedere all'app
-
-### GALLERY
-La pagina Gallery contiene due elementi principali
-- Lista con un numero limitato di foto per consentire la migliore esperienza utente
-- Un paginatore per navigare attraverso le foto caricate
-- Per ogni immagine è visualizzato:
-    - l'utente che l'ha caricate
-    - la data e l'ora di caricamento
-    - una form per votare in modo semplice la foto con un voto che va da 1 a 5 (è ammesso solo un voto per utente)
-
-### RANKING
-La pagina Ranking contienele prime 5 foto in ordine di rilevanza
-
-### UPLOAD FORM 
-Contiene una form per il caricamento di nuove immagini da parte dell'utente loggato
-
----
-
-## SCREENSHOOT, SHOWCASES AND FLOW SCHEMA
-//TODO
 
 ---
 
