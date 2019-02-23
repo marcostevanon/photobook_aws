@@ -1,73 +1,12 @@
-/**
- *  /api/search
- */
-
 'use strict';
-let router = require('express').Router();
-const verifyToken = require('./auth');
+//*     /api/search
 
-const elsClient = require('../workers/elastic-search.worker').client;
+const router = require('express').Router();
+const verifyToken = require('../controllers/auth.controller').verifyToken;  //import middleware to authenticate apis
 
-// /api/search/:keyword
-router.get('/:keyword', verifyToken, async (req, res) => {
-    const query = req.params.keyword;
+const searchController = require('../controllers/search.controller');
 
-    var searchByImageMeta = elsClient.search({
-        body: {
-            from: 0, size: 30,
-            query: {
-                multi_match: {
-                    query: query,
-                    fields: ['title', 'description'],
-                    fuzziness: 1
-                }
-            }
-        }
-    })
-
-    var searchByImageTags = elsClient.search({
-        body: {
-            from: 0, size: 30,
-            query: {
-                match:
-                    { tags: query }
-            }
-        }
-    })
-
-    var searchByUser = elsClient.search({
-        body: {
-            from: 0, size: 30,
-            query: {
-                multi_match: {
-                    query: query,
-                    fields: ['username', 'firstname', 'lastname'],
-                    fuzziness: 1
-                }
-            }
-        }
-    })
-
-    Promise.all([searchByImageMeta, searchByImageTags, searchByUser])
-        .then(response => {
-            res.status(200).json({
-                byTitleDesc: {
-                    count: response[0].hits.total,
-                    data: response[0].hits.hits.map(item => item._source)
-                },
-                byTags: {
-                    count: response[1].hits.total,
-                    data: response[1].hits.hits.map(item => item._source)
-                },
-                byUser: {
-                    count: response[2].hits.total,
-                    data: response[2].hits.hits.map(item => item._source)
-                }
-            });
-        })
-
-
-    // res.sendStatus(500);
-});
+//*     /api/search/:keywords
+router.get('/:keywords', verifyToken, searchController.search);
 
 module.exports = router;
