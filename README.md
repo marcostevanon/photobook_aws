@@ -3,7 +3,7 @@
 > ## Questa app è creata a SOLO SCOPO EDUCATIVO, i dati inseriti potrebbero non essere protetti e si raccomanda di non utilizzare dati reali o sensibili
 <br>
 
-# ITS PHOTO CONTEST
+# ITS PHOTO CONTEST - Backend
 
 ## COME UTILIZZARE
 Collegatevi al seguente link:
@@ -11,7 +11,7 @@ Collegatevi al seguente link:
 *Per utilizzare l'app è necessario creare un utente*
 
 ---
-<br>
+Vedi anche [frontend](https://github.com/marcostevanon/ITS_PhotoContest-Client)<br>
 
 ## TECNOLOGIE UTILIZZATE
 - CLOUD AWS
@@ -19,16 +19,13 @@ Collegatevi al seguente link:
     - RDS
     - EC2
     - CLOUDFRONT
-    - LAMBDA
-    - EMR (prossima imprementazione)
+    - LAMBDA 
 - BACKEND
     - NODE.JS
+    - EXPRESS.JS
     - RABBITMQ
     - REDIS
-    - ELASTICH SEARCH  (prossima imprementazione)
-- FRONTEND
-    - ANGULAR
-    - SEMANTIC-UI
+    - ELASTICH SEARCH
 ---
 <br>
 
