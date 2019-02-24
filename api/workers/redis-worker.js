@@ -12,16 +12,17 @@ module.exports.generateRatingList = () => {
 
         //Select first 10 photos with higer calculated score [score = (5 * image_average_value) + (3 * number_of_votes)]
         const query = `SELECT DISTINCT images.id,
-                                users.username                                as author_username,
-                                users.avatar                                  as author_avatar_url,
-                                images.raw_image_url                          as raw_image_url,
-                                images.resized_image_url                      as thumbnail_url,
-                                images.title                                  as title,
-                                images.description                            as description,
-                                images.tags::TEXT                             as tags,
-                                images.n_votes                                as votes_n,
-                                images.avg_votes                              as votes_avg,
-                                images.timestamp                              as timestamp,
+                                users.id                    as author_id,
+                                users.username              as author_username,
+                                users.avatar                as author_avatar_url,
+                                images.raw_image_url        as raw_image_url,
+                                images.resized_image_url    as thumbnail_url,
+                                images.title                as title,
+                                images.description          as description,
+                                images.tags::TEXT           as tags,
+                                images.n_votes              as votes_n,
+                                images.avg_votes            as votes_avg,
+                                images.timestamp            as timestamp,
                                 ($1 * images.avg_votes) + ($2 * images.n_votes) as score
                         FROM tsac18_stevanon.images
                             JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id

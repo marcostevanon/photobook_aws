@@ -53,7 +53,7 @@ function updateImagesIndeces() {
                 })
             })
             .then(resp => {
-                console.log("Images OK - count:", resp.items.length);
+                console.log("ES - Images OK \t-> count:", resp.items.length);
                 resolve(resp.items.length)
             })
             .catch(err => reject(err))
@@ -88,7 +88,7 @@ function updateUsersIndeces() {
                 })
             })
             .then(resp => {
-                console.log("Users OK - count:", resp.items.length);
+                console.log("ES - Users OK \t-> count:", resp.items.length);
                 resolve(resp.items.length)
             })
             .catch(err => reject(err))

@@ -17,7 +17,6 @@ async function setVote(req, res) {
             const query = `INSERT INTO tsac18_stevanon.votes (id_image, id_user, value) VALUES ($1, $2, $3) RETURNING *`;
             return pg_client.query(query, [req.body.image_id, req.body.user_id, req.body.value])
         })
-        // .then((db) => console.log(`Write ${db.rowCount} row`))
 
         // update vote number and vote average on image table
         .then((db) => {
@@ -27,7 +26,6 @@ async function setVote(req, res) {
                         WHERE id = $1`;
             return pg_client.query(query, [req.body.image_id])
         })
-        // .then((db) => console.log(`Update ${db.rowCount} row`))
         .then(() => pg_client.query('COMMIT;'))
 
         // select new vote values

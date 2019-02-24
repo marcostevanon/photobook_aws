@@ -25,7 +25,6 @@ const server = app.listen(5671, () => {
 
 
 function regenerateCache() {
-	console.log('Regenerating Cache...');
 	require('./workers/redis-worker').generateRatingList()
 		.then(() => { require('./workers/elastic-search.worker').updateImagesIndeces() })
 		.then(() => { require('./workers/elastic-search.worker').updateUsersIndeces() })
