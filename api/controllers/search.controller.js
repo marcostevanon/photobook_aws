@@ -3,7 +3,7 @@
 const elsClient = require('../workers/elastic-search.worker').client;
 
 async function search(req, res) {
-    const query = req.params.keyword;
+    const query = req.params.keywords;
 
     var searchByImageMeta = elsClient.search({
         body: {
