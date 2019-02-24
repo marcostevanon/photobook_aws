@@ -13,6 +13,7 @@ async function getGallery(req, res) {
     const pg_client = new PgClient(pg_options);
     const query = `SELECT 
                         images.id                as post_id,
+                        users.id                 as author_id,
                         users.username           as author_username,
                         users.avatar             as author_avatar_url,
                         images.raw_image_url     as raw_image_url,

@@ -4,8 +4,8 @@ const morgan = require('morgan');
 const body_parser = require('body-parser');
 const cron = require('node-cron');
 
-console.log(new Date().toUTCString())
 console.log('Inizializing...');
+console.log(new Date().toUTCString())
 
 app.use(cors());
 app.use(morgan(':date[iso] [:response-time[digits]ms] :remote-addr :method :url :status \t :referrer'));
@@ -31,6 +31,7 @@ function regenerateCache() {
 		.then(() => { require('./workers/elastic-search.worker').updateUsersIndeces() })
 		.catch(err => console.warn(err));
 }
+regenerateCache();
 
 // Schedule cache regeneration every day at 00:00
 cron.schedule('0 0 * * *', regenerateCache);

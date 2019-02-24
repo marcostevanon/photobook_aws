@@ -18,7 +18,7 @@ async function getProfileById(req, res) {
         .then(table => {
             pg_client.end();
             if (table.rows.length)
-                res.json(table.rows);
+                res.json(table.rows[0]);
             else
                 res.sendStatus(404);
         })
@@ -52,12 +52,12 @@ async function getImageByProfileId(req, res) {
         .then(() => pg_client.query(query, [userId]))
         .then(table => {
             pg_client.end();
-            if (table.rows.length)
-                res.json(table.rows);
-            else
-                res.sendStatus(404);
+            res.json(table.rows);
         })
-        .catch(console.log);
+        .catch(err => {
+            console.log(err);
+            res.sendStatus(404);
+        });
 }
 
 module.exports = { getProfileById, getImageByProfileId }
