@@ -82,6 +82,7 @@ async function registration(req, res) {
   const email = req.body.email;
   const username = req.body.username;
   const password = bcrypt.hashSync(req.body.password);
+  const avatar = req.body.avatar;
 
   if (!firstname || !email || !username || !password)
     return res.sendStatus(400);
@@ -91,10 +92,10 @@ async function registration(req, res) {
     return res.status(400).send('email not valid');
 
   const pg_client = new PgClient(pg_options);
-  const query = `INSERT INTO tsac18_stevanon.users (firstname, lastname, email, username, password) VALUES ($1, $2, $3, $4, $5)`;
+  const query = `INSERT INTO tsac18_stevanon.users (firstname, lastname, email, username, password, avatar) VALUES ($1, $2, $3, $4, $5, $6)`;
 
   pg_client.connect()
-    .then(() => pg_client.query(query, [firstname, lastname ? lastname : null, email, username, password]))
+    .then(() => pg_client.query(query, [firstname, lastname ? lastname : null, email, username, password, avatar ? avatar : null]))
     .then(result => {
       if (result.rowCount > 0) {
         res.sendStatus(204);
