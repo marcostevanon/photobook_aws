@@ -10,7 +10,10 @@ const galleryController = require('../controllers/gallery.controller');
 router.get('/', verifyToken, galleryController.getGallery);
 
 //*     /api/gallery/ranking
-router.get('/ranking', verifyToken, galleryController.getRanging);
+router.get('/ranking', verifyToken, galleryController.getRanking);
+
+//*     /api/gallery/:image_id
+router.get('/:image_id', verifyToken, galleryController.getPost);
 
 //*     /api/gallery/edit/:image_id
 router.post('/edit/:image_id', verifyToken, galleryController.editImage)

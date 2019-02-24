@@ -36,14 +36,46 @@ async function getGallery(req, res) {
             pg_client.end();
 
             if (table) res.status(200).json(table.rows);
-            else res.sendStatus(500);
+            else res.sendStatus(400);
         }).catch(err => {
             res.sendStatus(500);
             console.log(err);
         });
 }
 
-async function getRanging(req, res) {
+async function getPost(req, res) {
+
+    const pg_client = new PgClient(pg_options);
+    const query = `SELECT 
+                    images.id                as post_id,
+                    users.id                 as author_id,
+                    users.username           as author_username,
+                    users.avatar             as author_avatar_url,
+                    images.raw_image_url     as raw_image_url,
+                    images.resized_image_url as thumbnail_url,
+                    images.title             as title,
+                    images.description       as description,
+                    images.tags              as tags,
+                    images.timestamp         as timestamp
+                FROM tsac18_stevanon.images
+                    JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
+                WHERE images.id = $1 AND users.id = $2
+                ORDER BY images.id DESC`;
+
+    pg_client.connect()
+        .then(() => pg_client.query(query, [req.params.image_id, req.token.id]))
+        .then(table => {
+            pg_client.end();
+
+            if (table) res.status(200).json(table.rows[0]);
+            else res.sendStatus(400);
+        }).catch(err => {
+            res.sendStatus(500);
+            console.log(err);
+        });
+}
+
+async function getRanking(req, res) {
     var redis_client = redis.createClient(redis_options);
 
     redis_client.on("error", err => console.log(err));
@@ -107,9 +139,9 @@ async function deleteImage(req, res) {
             pg_client.end();
 
             if (response.rowCount)
-                return res.sendStatus(200);
+                res.sendStatus(200);
             else
-                return res.sendStatus(400);
+                res.sendStatus(400);
         })
         .then(() => worker.generateRatingList())
         .catch(err => {
@@ -118,4 +150,4 @@ async function deleteImage(req, res) {
         });
 }
 
-module.exports = { getGallery, getRanging, editImage, deleteImage }
+module.exports = { getGallery, getPost, getRanking, editImage, deleteImage }
