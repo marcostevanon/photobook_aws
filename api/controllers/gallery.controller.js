@@ -143,6 +143,7 @@ async function deleteImage(req, res) {
             else
                 res.sendStatus(400);
         })
+        .then(() => { require('../workers/elastic-search.worker').updateImagesIndeces() })
         .then(() => worker.generateRatingList())
         .catch(err => {
             res.sendStatus(400);
