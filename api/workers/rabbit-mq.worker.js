@@ -66,16 +66,15 @@ function createThumbnail(msg) {
                                     SET resized_image_url = $1, status = $2
                                     WHERE id = $3`;
                     var args = [imageUrl, 'uploaded', msg.image_id];
-                    setTimeout(() => {
-                        pg_client.connect()
-                            .then(() => pg_client.query(query, args))
-                            .then(() => {
-                                pg_client.end();
-                                console.timeEnd('thumb');
-                                resolve(res)
-                            }).catch(console.log);
-                    }, 5000)
 
+                    return pg_client.connect();
+
+                })
+                .then(() => pg_client.query(query, args))
+                .then(() => {
+                    pg_client.end();
+                    console.timeEnd('thumb');
+                    resolve(res)
                 })
                 .catch(err => {
                     reject(err);
