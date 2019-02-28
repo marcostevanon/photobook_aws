@@ -1,16 +1,10 @@
-var elasticsearch = require('elasticsearch');
+const elasticsearch = require('elasticsearch');
+const es_config = require('../config/es.config');
 
-var client = new elasticsearch.Client({
-    // host: 'http://[username]:[password]@[server]:[port]/',
-    host: 'http://ec2-63-33-232-170.eu-west-1.compute.amazonaws.com:9200/',
-    // host: 'http://localhost:9200/',
-    // host: 'http://debian:9200/',
-    // log:  'trace'
-});
-
+var client = new elasticsearch.Client(es_config);
 
 const { Client } = require("pg");
-const pg_options = require('../../config/pg.config');
+const pg_options = require('../config/pg.config');
 
 function updateImagesIndeces() {
     return new Promise((resolve, reject) => {

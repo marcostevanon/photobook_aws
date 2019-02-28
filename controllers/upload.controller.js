@@ -3,17 +3,17 @@
 const uuid = require('uuid/v1');
 
 // import modules to upload files on AWS S3
-const s3 = require('../../config/s3.config');
+const s3 = require('../config/s3.config');
 
 // import modules to query postgresql
 const { Client: PgClient } = require("pg");
-const pg_options = require('../../config/pg.config');
+const pg_options = require('../config/pg.config');
 
 // import modules to call rabbitmq
 const mq = require('amqplib');
-const mq_options = require('../../config/mq.config.js');
+const mq_options = require('../config/mq.config.js');
 
-const azure = require('../../config/azure.config');
+const azure = require('../config/azure.config');
 const request = require("request");
 
 async function uploadImage(req, res) {

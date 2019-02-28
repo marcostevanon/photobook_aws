@@ -5,9 +5,9 @@ const bcrypt = require('bcrypt-nodejs');
 
 // import modules to query postgresql
 const { Client: PgClient } = require("pg");
-const pg_options = require('../../config/pg.config');
+const pg_options = require('../config/pg.config');
 
-const auth = require('../../config/auth.config');
+const auth = require('../config/auth.config');
 
 // This function is used as middleware to authenticate api calls to this server
 function verifyToken(req, res, next) {

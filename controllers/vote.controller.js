@@ -2,7 +2,7 @@
 
 // import modules to query postgresql
 const { Client: PgClient } = require("pg");
-const pg_options = require('../../config/pg.config');
+const pg_options = require('../config/pg.config');
 
 const resis_worker = require('../workers/redis-worker');
 

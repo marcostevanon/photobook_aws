@@ -4,8 +4,8 @@
 const { Client: PgClient } = require("pg");
 const redis = require('redis');
 
-const pg_options = require('../../config/pg.config');
-const redis_options = require('../../config/redis.config');
+const pg_options = require('../config/pg.config');
+const redis_options = require('../config/redis.config');
 const worker = require('../workers/redis-worker');
 
 async function getGallery(req, res) {
