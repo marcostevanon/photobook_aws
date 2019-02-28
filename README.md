@@ -1,31 +1,22 @@
-> ## This app is created for EDUCATIONAL PURPOSE ONLY, the data entered may not be protected and it is recommended not to use real or sensitive data
+## *This app is created for **EDUCATIONAL PURPOSE ONLY**, the data entered may not be protected and it is recommended not to use real or sensitive data*
 
-> ## Questa app è creata a SOLO SCOPO EDUCATIVO, i dati inseriti potrebbero non essere protetti e si raccomanda di non utilizzare dati reali o sensibili
-<br>
+## *Questa app è creata a **SOLO SCOPO EDUCATIVO**, i dati inseriti potrebbero non essere protetti e si raccomanda di non utilizzare dati reali o sensibili*
+<br />
 
 # ITS PHOTO CONTEST - Backend
-
-## COME UTILIZZARE
-Collegatevi al seguente link:
-[photocontest.marcostevanon.ovh](http://photocontest.marcostevanon.ovh)<br>
-*Per utilizzare l'app è necessario creare un utente*
-
----
-Vedi anche [frontend](https://github.com/marcostevanon/ITS_PhotoContest-Client)<br>
+Vedi **[frontend](https://github.com/marcostevanon/ITS_PhotoContest-Client)<br>**
 
 ## TECNOLOGIE UTILIZZATE
-- CLOUD AWS
-    - S3
-    - RDS
-    - EC2
-    - CLOUDFRONT
-    - LAMBDA 
-- BACKEND
-    - NODE.JS
-    - EXPRESS.JS
-    - RABBITMQ
-    - REDIS
-    - ELASTICH SEARCH
+- AWS S3 (storage + web server)
+- AWS RDS (PostgreSQL)
+- AWS CLOUDFRONT
+- AWS LAMBDA
+- AWS EC2 (API):
+	- NODE.JS & PM2
+	- EXPRESS.JS
+	- REDIS	
+	- RABBITMQ
+	- ELASTICH SEARCH
 ---
 <br>
 
@@ -34,34 +25,53 @@ Vedi anche [frontend](https://github.com/marcostevanon/ITS_PhotoContest-Client)<
 ### REGISTRAZIONE NUOVO UTENTE
 > `REQUEST` => API => RDS
 
-Il client invia una richiesta API ad un server REST, inviando:
-- email
-- username
-- password
-
+Il client invia una richiesta al server REST, inviando:
+```
+{
+    "firstname": "Francesco",
+    "lastname": "Biamchi",
+    "username": "francescob",
+    "email": "francesco.b@gmail.com",
+    "password": "password"
+}
+```
 Dopo che è stato generato l'hash della password viene aggiunto ad `RDS` il nuovo utente<br>
-NB: Un nuovo utente può visualizzare le foto caricate da altri utenti e votarle
+NB: Un nuovo utente può caricare delle foto, visualizzare le foto caricate da altri utenti e votarle
 
 ---
 
 ### LOGIN
 > `REQUEST` => API *(jwt)* => RDS
 
-Il client invia una richiesta API ad un server REST, inviando:
-- username
-- password (cifrata)
+Il client invia una richiesta al server REST, inviando:
+```
+{
+    "username": "pippo",
+    "password": "ugo"
+}
+```
 
-Il server REST controlla la validità dei dati inseriti e restituisce un token di accesso in caso i dati inseriti siano corrispondenti ad utente registrato<br>
-Il token contiene i seguenti valori:
-- user id
-- username
+Il server REST controlla la validità dei dati inseriti e restituisce un messaggio contenente il token di accesso, solo in caso i dati inseriti siano corrispondenti ad un utente registrato<br>
+
+```
+{
+  "message": "Authorized",
+  "status": 200,
+  "token": "xxxxxxxxx",
+  "expiresIn": 14400,
+  "user": {
+    "id": 345,
+    "username": "mario",
+    "avatar": "https://example.com/images/imagename.jpg"
+  }
+}
+```
 
 ---
 
 ### GALLERIA
 > `REQUEST` => API => REDIS *(get)*
 
-Il client invia una richiesta API ad un server REST<br>
 Viene restituita la lista di pagine della galleria, la lista di foto per la pagina selezionata e relativi dati (da redis)
 - lista pagine
 - lista foto per pagina
@@ -71,17 +81,16 @@ Viene restituita la lista di pagine della galleria, la lista di foto per la pagi
 ### CLASSIFICA
 > `REQUEST` => API => REDIS *(get)*
 
-Il client invia una richiesta API ad un server REST<br>
-Viene restituita la classifica delle 5 foto più votate (da redis)
-- lista 5 foto più votate
+Viene restituita la classifica delle 10 foto più votate (da redis)
+- lista 10 foto più votate
 
 ---
 
 ### CARICAMENTO FOTO
 > `CLIENT REQUEST` => API => S3 => CLOUDFRONT => RDS<br>
-> `DETACHED MODE` &nbsp;&nbsp; => API => RABBITMQ => EC2 => CLOUDFRONT => RDS *(update)* => REDIS *(set)*
+> `DETACHED MODE` => API => RABBITMQ => EC2 => CLOUDFRONT => RDS *(update)* => REDIS *(set)*  => ELASTIC SEARCH *(update)*
 
-Il client invia una richiesta API ad un server REST, inviando:
+Il client invia una richiesta al server REST, inviando:
 - foto
 - utente *(attraverso il token)*
 
@@ -91,19 +100,18 @@ In seguito genera il link di `CLOUDFRONT` per accedere all'immagine attraverso C
 Infine aggiunge a `RDS` una nuova entry con l'url della nuova immagine e l'utente che l'ha caricata
 
 **FASE 2** *(in background)*<br>
-Il server REST aggiunge alla coda di RabbitMQ i dati appena inseriti<br>
+Il server REST aggiunge alla coda di RabbitMQ la foto appena inserita<br>
 Attraverso un consumer in attesa su un'istanza `EC2`, le immagini caricate vengono elaborate:
-- riduzione dell'immagine in proporzione con lunghezza massima lato di 1000px
-- generazione qrcode con l'url (`CLOUDFRONT`) dell'immagine ridotta
+- riduzione dell'immagine con dimensione massima di 1000px per lato (quadrata)
 - aggiornamento dell'entry di `RDS` con url immagine ridotta e url immagine qrcode
 - invio notifica di caricamento riuscito al client
+- generazione qrcode con l'url (`CLOUDFRONT`) dell'immagine ridotta
 
 ---
 
 ### CANCELLAZIONE PHOTO
 > `REQUEST` => API => S3 => RDS
 
-Il client invia una richiesta API ad un server REST<br>
 In modo atomico vengono eseguite le seguenti operazioni:
 - rimossa la foto originale da `S3`
 - rimossa la foto modificate da `S3`
@@ -114,7 +122,7 @@ In modo atomico vengono eseguite le seguenti operazioni:
 ### VOTO FOTO
 > `REQUEST` => API => RDS => REDIS *(set)*
 
-Il client invia una richiesta API ad un server REST, inviando:
+Il client invia una richiesta al server REST, inviando:
 - id foto
 - voto inserito
 
@@ -122,7 +130,7 @@ In modo atomico vengono eseguite le seguenti operazioni:
 - aggiunta un'entry nella tabella voti relativa al voto appena inviato
 - calcolato la nuova media ed aggiornata la entry di RDS
 - calcolato la nuova media ed aggiornata la entry di redis
-- aggiornata la lista delle pagine della galleria
+- aggiornata la lista delle pagine della galleria di redis
  
 ---
 <br>
@@ -131,22 +139,25 @@ In modo atomico vengono eseguite le seguenti operazioni:
 
 ### GESTIONE CLASSIFICA
 Viene gestita una lista ordinata con `REDIS`<br>
-Ogni 24 ore e ad ogni voto inserito correttamente su `RDS`, viene eseguito il calcolo della rilevanza per ogni immagine:<br>
+Ad ogni voto inserito correttamente su `RDS`, viene eseguito il calcolo della rilevanza per ogni immagine<br>
+*Ogni 24 ore viene ricalcalcola la lista*<br /><br />
 Sono presi in considerazione i seguenti valori:
 - Data di caricamento dell'immagine (più l'immagine è recente, più è rilveante)
-- Voto medio dell'immagine (più il voto è altro più l'immagine è rilevante)
+- Voto medio dell'immagine (weight: 5)
+- Numero di voti dell'immagine (weight: 3)
 
 La lista ordinata di `REDIS` è strutturata nel modo seguente:
 - score: rilevanza della foto calcolata
-- value: dati utili alla visualizzazione dell'interfaccia
+- value: dati utili alla visualizzazione della foto
 
 | score | value |
 |:---:|:---:|
-| 25.6 | { image.jpg, username } |
-| 16.5 | { image.jpg, username } |
-| 12.8 | { image.jpg, username } |
-| 3.0 | { image.jpg, username } |
-| 1.7 | { image.jpg, username } |
+| 25.6 | { image.jpg, metadata } |
+| 16.5 | { image.jpg, metadata } |
+| 12.8 | { image.jpg, metadata } |
+| 3.0 | { image.jpg, metadata } |
+| 1.7 | { image.jpg, metadata } |
+<br />
 *esempio di visualizazzione in ordine inverso*
 
 ---
@@ -169,6 +180,7 @@ La lista ordinata di `REDIS` è strutturata nel modo seguente:
 | 3 | [ { url: ..., userid: ..., username: ..., average_vote: ...  }, {...} ] |
 | 4 | [ { url: ..., userid: ..., username: ..., average_vote: ...  }, {...} ] |
 | 5 | [ { url: ..., userid: ..., username: ..., average_vote: ...  }, {...} ] |
+<br />
 *esempio di visualizazzione*
 
 ---
@@ -178,8 +190,18 @@ La lista ordinata di `REDIS` è strutturata nel modo seguente:
 
 ### ELABORAZIONE DELLE IMMAGINI CARICATE
 Quando un'immagine è caricata correttamente su `S3` e aggiunta a `RDS` viene aggiunta un'operazione alla coda di `RabbitMQ`<br>
-//TODO//
+Una volta che la foto è stata ridimensionata viene caricata su `S3` e successivamente aggiornato il record su `RDS`<br />
+Di seguito viene inviata una notifica l client in ascolto per dargli la possibilità di aggiungere un titolo, una descrizione ed eventuali tag
 
 ---
+<br>
 
+## ELASTIC SEARCH
+
+### FUNZIONE RICERCA
+Ad ogni upload viene aggiornato elastic search per permettere di cercare le foto secondo i loro titolo, descrizione e tags, nonchè per utente
+Elastic search torna una corrispondenza anche di parole visibilmente simili a quelle ricercare (errori di battitura)
+
+---
+<br>
 `by Marco Stevanon`
