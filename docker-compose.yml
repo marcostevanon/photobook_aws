@@ -16,8 +16,8 @@ services:
       - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-    # networks:
-    #  - esnet
+    networks:
+     - esnet
 
   redis:
     container_name: redis
@@ -33,18 +33,15 @@ services:
 
   api:
     container_name: photocontest_api
-    image: node:10-alpine
+    build: .
     volumes:
-      - ./:/app
+      - .:/app
       - /app/node_modules
-    working_dir: /app
     environment: 
       NODE_ENV: stage
     ports:
       - 5671:5671
-    command: 
-      - npm i
-      - npm run stage
+    command: npm run stage
 
 volumes:
   esdata1:
