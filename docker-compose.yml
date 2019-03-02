@@ -37,7 +37,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    entrypoint: 
+    environment:
       NODE_ENV=stage
     env_file: .env
     # ports:
