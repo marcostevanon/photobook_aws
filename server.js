@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const app = require('express')();
 const cors = require('cors');
 const morgan = require('morgan');
@@ -19,7 +21,7 @@ app.use('/api/profile', require('./route/profile.router'));
 app.use('/api/search', require('./route/search.router'));
 app.all('*', (req, res) => res.sendStatus(404));
 
-const server = app.listen(5671, () => {
+const server = app.listen(process.env.PORT, () => {
 	console.log(`\nApp listening at http://${server.address().address}:${server.address().port}`);
 });
 
