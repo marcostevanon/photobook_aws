@@ -40,7 +40,7 @@ services:
     env_file: .env
     # ports:
     #   - 5671:5671
-    command: npm run stage
+    command: NODE_ENV=stage node server.js
 
 volumes:
   esdata1:
