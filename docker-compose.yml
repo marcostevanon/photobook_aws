@@ -4,28 +4,25 @@ services:
   elasticsearch:
     container_name: elasticsearch
     image: elasticsearch:6.6.1
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+    # environment:
+    #   - cluster.name=docker-cluster
+    #   - bootstrap.memory_lock=true
+    #   - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    # ulimits:
+    #   memlock:
+    #     soft: -1
+    #     hard: -1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-    networks:
-     - esnet
+      - 9300:9300
 
   redis:
     container_name: redis
     image: redis:5.0.3-alpine3.9
     ports:
       - 6379:6379
-    networks:
-      - redis-net
     volumes:
       - redis-data:/data
     restart: always
@@ -34,6 +31,9 @@ services:
   api:
     container_name: photocontest_api
     build: .
+    depends_on: 
+      - elasticsearch
+      - redis
     volumes:
       - .:/app
       - /app/node_modules
@@ -48,7 +48,3 @@ volumes:
   esdata1:
     driver: local
   redis-data:
-
-networks:
-  esnet:
-  redis-net:
