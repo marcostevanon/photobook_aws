@@ -32,10 +32,8 @@ services:
     container_name: photocontest_api
     build: .
     depends_on: 
-      - elasticsearch:
-          condition: service_healthy
-      - redis:
-          condition: service_healthy
+      - elasticsearch
+      - redis
     volumes:
       - .:/app
       - /app/node_modules
