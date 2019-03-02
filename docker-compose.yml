@@ -4,19 +4,13 @@ services:
   elasticsearch:
     container_name: elasticsearch
     image: elasticsearch:6.6.1
-    # environment:
-    #   - cluster.name=docker-cluster
-    #   - bootstrap.memory_lock=true
-    #   - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    # ulimits:
-    #   memlock:
-    #     soft: -1
-    #     hard: -1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
       - 9300:9300
+    networks: 
+      - backend
 
   redis:
     container_name: redis
@@ -27,6 +21,8 @@ services:
       - redis-data:/data
     restart: always
     entrypoint: redis-server --appendonly yes
+    networks: 
+      - backend
 
   api:
     container_name: photocontest_api
@@ -38,13 +34,18 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      NODE_ENV=stage
+      - NODE_ENV=stage
     env_file: .env
-    # ports:
-    #   - 5671:5671
-    command: node server.js
+    ports:
+      - 5671:5671
+    command: ["node", "index.js"]
+    networks: 
+      - backend
 
 volumes:
   esdata1:
     driver: local
   redis-data:
+
+networks: 
+  backend:
