@@ -32,16 +32,16 @@ services:
     container_name: photocontest_api
     build: .
     depends_on: 
-      - elasticsearch
-      - redis
+      - elasticsearch:
+          condition: service_healthy
+      - redis:
+          condition: service_healthy
     volumes:
       - .:/app
       - /app/node_modules
-    environment: 
-      NODE_ENV: stage
     env_file: .env
-    ports:
-      - 5671:5671
+    # ports:
+    #   - 5671:5671
     command: npm run stage
 
 volumes:

@@ -1,4 +1,4 @@
-FROM node:10-alpiine
+FROM node:10-alpine
 WORKDIR /app
 COPY package.json .
 RUN npm i
