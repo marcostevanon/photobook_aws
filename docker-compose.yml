@@ -39,6 +39,7 @@ services:
       - /app/node_modules
     environment: 
       NODE_ENV: stage
+    env_file: .env
     ports:
       - 5671:5671
     command: npm run stage
