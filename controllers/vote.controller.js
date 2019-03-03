@@ -33,15 +33,21 @@ async function setVote(req, res) {
             const query = `SELECT n_votes as votes_n, avg_votes as votes_avg
                             FROM tsac18_stevanon.images
                             WHERE id = $1`;
-            return pg_client.query(query, [req.body.image_id])
+            pg_client.query(query, [req.body.image_id])
+                .then(response => res.status(201).json(response.rows[0]))
         })
-        .then(response => res.status(201).json(response.rows[0]))
 
         // regenerate redis cache
         .then(() => resis_worker.generateRatingList())
         .catch((err) => {
             console.log(err)
-            res.sendStatus(500);
+            pg_client.query('ROLLBACK;')
+
+            const query = `SELECT n_votes as votes_n, avg_votes as votes_avg
+                            FROM tsac18_stevanon.images
+                            WHERE id = $1`;
+            pg_client.query(query, [req.body.image_id])
+                .then(response => res.status(500).json(response.rows[0]))
         });
 }
 
