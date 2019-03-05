@@ -1,0 +1,1 @@
+module.exports = { cognitiveKey: process.env.AZURE_COGNITIVE_KEY }
