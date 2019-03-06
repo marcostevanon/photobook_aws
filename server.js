@@ -23,19 +23,19 @@ app.use('/api/profile', require('./route/profile.router'));
 app.use('/api/search', require('./route/search.router'));
 app.all('*', (req, res) => res.sendStatus(404));
 
+function regenerateCache() {
+	require('./workers/redis-worker').generateRatingList()
+		.then(() => { require('./workers/elastic-search.worker').updateImagesIndeces() })
+		.then(() => { require('./workers/elastic-search.worker').updateUsersIndeces() })
+		.catch(err => console.warn(err));
+}
+
 setTimeout(() => {
 
 	const server = app.listen(process.env.PORT, () => {
 		console.log(`\nApp listening at http://${server.address().address}:${server.address().port}`);
 	});
 
-
-	function regenerateCache() {
-		require('./workers/redis-worker').generateRatingList()
-			.then(() => { require('./workers/elastic-search.worker').updateImagesIndeces() })
-			.then(() => { require('./workers/elastic-search.worker').updateUsersIndeces() })
-			.catch(err => console.warn(err));
-	}
 	regenerateCache();
 
 	// Schedule cache regeneration every day at 00:00

@@ -6,8 +6,7 @@ var sharp = require('sharp');
 
 const s3 = require('../config/s3.config');
 
-const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg = require('../config/pg.config').getPool();
 
 var queue = 'photo_processing';
 setTimeout(() => startListening(), 1);
@@ -61,18 +60,14 @@ function createThumbnail(msg) {
                     var imageUrl = createCloudfrontURL(data);
 
                     //prepare file metadata for push into DB
-                    const pg_client = new Client(pg_options);
                     const query = `UPDATE tsac18_stevanon.images
                                     SET resized_image_url = $1, status = $2
                                     WHERE id = $3`;
                     var args = [imageUrl, 'uploaded', msg.image_id];
 
-                    return pg_client.connect();
-
+                    return pg.query(query, args)
                 })
-                .then(() => pg_client.query(query, args))
                 .then(() => {
-                    pg_client.end();
                     console.timeEnd('thumb');
                     resolve(res)
                 })
