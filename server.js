@@ -9,6 +9,8 @@ const cron = require('node-cron');
 console.log('Inizializing...');
 console.log(new Date().toUTCString())
 
+require('./config/pg.config').initPgPool();
+
 app.use(cors());
 app.use(morgan(':date[iso] [:response-time[digits]ms] :remote-addr :method :url :status \t :referrer'));
 app.use(body_parser.json());

@@ -1,35 +1,24 @@
 'use strict'
 
 // import modules to query postgresql
-const { Client: PgClient } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg = require("../config/pg.config").getPool();
+// const pg_options = require('../config/pg.config');
 
 async function getProfileById(req, res) {
-
     var userId = req.params.userid;
 
-    const pg_client = new PgClient(pg_options);
     const query = `SELECT id, username, firstname, lastname, avatar, email
                    FROM tsac18_stevanon.users
                    WHERE id = $1`;
 
-    pg_client.connect()
-        .then(() => pg_client.query(query, [userId]))
-        .then(table => {
-            pg_client.end();
-            if (table.rows.length)
-                res.json(table.rows[0]);
-            else
-                res.sendStatus(404);
-        })
-        .catch(console.log);
+    pg.query(query, [userId])
+        .then(db => db.rows.length ? res.json(db.rows[0]) : res.sendStatus(404))
+        .catch(err => { console.log(err); res.sendStatus(500); });
 }
 
 async function getImageByProfileId(req, res) {
-
     var userId = req.params.userid;
 
-    const pg_client = new PgClient(pg_options);
     const query = `SELECT
                         images.id                as post_id,
                         users.username           as author_username,
@@ -48,16 +37,9 @@ async function getImageByProfileId(req, res) {
                         WHERE users.id = $1
                         ORDER BY images.id DESC`;
 
-    pg_client.connect()
-        .then(() => pg_client.query(query, [userId]))
-        .then(table => {
-            pg_client.end();
-            res.json(table.rows);
-        })
-        .catch(err => {
-            console.log(err);
-            res.sendStatus(404);
-        });
+    pg.query(query, [userId])
+        .then(db => db.rows.length ? res.json(db.rows[0]) : res.sendStatus(404))
+        .catch(err => { console.log(err); res.sendStatus(500); });
 }
 
 module.exports = { getProfileById, getImageByProfileId }

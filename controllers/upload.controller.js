@@ -6,8 +6,7 @@ const uuid = require('uuid/v1');
 const s3 = require('../config/s3.config');
 
 // import modules to query postgresql
-const { Client: PgClient } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg = require("../config/pg.config").getPool();
 
 // import modules to call rabbitmq
 const mq = require('amqplib');
@@ -19,7 +18,7 @@ const request = require("request");
 async function uploadImage(req, res) {
 
     if(!req.file)
-    return res.status(400).json('Request does not contain any file');
+        return res.status(400).json('Request does not contain any file');
 
     // verifies the tipe of file to upload
     if (req.file.mimetype.split('/')[0] != 'image')
@@ -44,17 +43,14 @@ async function uploadImage(req, res) {
         args.push(req.body.title ? req.body.title : '');
         args.push(req.body.description ? req.body.description : '');
 
-        const pg_client = new PgClient(pg_options);
         const query = `INSERT INTO "tsac18_stevanon".images (id_user, raw_image_url, status, original_name, title, description) 
                         VALUES ($1, $2, 'pending', $3, $4, $5)
                         RETURNING *`;
 
-        pg_client.connect()
-            .then(() => pg_client.query(query, args))
-            .then(response => {
-                pg_client.end();
+        pg.query(query, args)
+            .then(db => {
 
-                var msg = { image_id: response.rows[0].id, url: imageUrl, /*author_id: req.token.id,*/ filename: req.file.originalname, uuid: uuid1 }
+                var msg = { image_id: db.rows[0].id, url: imageUrl, /*author_id: req.token.id,*/ filename: req.file.originalname, uuid: uuid1 }
                 res.json(msg);
 
                 var queue = 'photo_processing';
@@ -62,9 +58,9 @@ async function uploadImage(req, res) {
                     .then(conn => conn.createChannel())
                     .then(ch => ch.assertQueue(queue, { persistent: true })
                         .then(ok => ch.sendToQueue(queue, Buffer.from(JSON.stringify(msg)))))
-                    .catch(console.log);
+                    .catch(err => { console.log(err); res.sendStatus(500); });
             })
-            .catch(console.log);
+            .catch(err => { console.log(err); res.sendStatus(500); });
     });
 };
 
@@ -76,19 +72,11 @@ function createCloudfrontURL(data) {
 
 async function checkUploadedPhoto(req, res) {
 
-    const pg_client = new PgClient(pg_options);
     const query = `SELECT resized_image_url, status FROM tsac18_stevanon.images WHERE id = $1;`;
 
-    pg_client.connect()
-        .then(() => pg_client.query(query, [req.params.photo_id]))
-        .then(response => {
-            pg_client.end();
-            if (response.rows.length)
-                res.json(response.rows[0]);
-            else
-                res.sendStatus(404)
-        })
-        .catch(console.log)
+    pg.query(query, [req.params.photo_id])
+        .then(db => db.rows.length ? res.json(db.rows[0]) : res.sendStatus(404))
+        .catch(err => { console.log(err); res.sendStatus(500); });
 }
 
 async function useCognitiveService(req, res) {
