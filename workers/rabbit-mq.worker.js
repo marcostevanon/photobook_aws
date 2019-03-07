@@ -9,10 +9,11 @@ const s3 = require('../config/s3.config');
 const pg = require('../config/pg.config').getPool();
 
 var queue = 'photo_processing';
-setTimeout(() => startListening(), 1);
+// setTimeout(() => startListening(), 1);
 
 function startListening() {
-    mq.connect(mq_options)
+    console.log('RMQ started...');
+    mq.connect(mq_options.rabbitMQconnectionstring)
         .then(conn => conn.createChannel())
         .then(ch => ch.assertQueue(queue)
             .then(ok => {
@@ -84,3 +85,5 @@ function createCloudfrontURL(data) {
     url[2] = s3.cloudfrontURL;
     return url.join('/');
 }
+
+module.exports = { startListening }

@@ -25,8 +25,9 @@ app.all('*', (req, res) => res.sendStatus(404));
 
 function regenerateCache() {
 	require('./workers/redis-worker').generateRatingList()
-		.then(() => { require('./workers/elastic-search.worker').updateImagesIndeces() })
-		.then(() => { require('./workers/elastic-search.worker').updateUsersIndeces() })
+		.then(() => require('./workers/elastic-search.worker').updateImagesIndeces())
+		.then(() => require('./workers/elastic-search.worker').updateUsersIndeces())
+		.then(() => require('./workers/rabbit-mq.worker').startListening())
 		.catch(err => console.warn(err));
 }
 
