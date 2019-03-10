@@ -38,7 +38,7 @@ async function getImageByProfileId(req, res) {
                         ORDER BY images.id DESC`;
 
     pg.query(query, [userId])
-        .then(db => db.rows.length ? res.json(db.rows[0]) : res.sendStatus(404))
+        .then(db => db.rows.length ? res.json(db.rows) : res.sendStatus(404))
         .catch(err => { console.log(err); res.sendStatus(500); });
 }
 
