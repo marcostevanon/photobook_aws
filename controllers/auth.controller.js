@@ -19,7 +19,7 @@ function verifyToken(req, res, next) {
     return res.status(403).send({ error: { status: 403, message: 'No token provided' } });
 
   // verifies secret and checks exp
-  jwt.verify(token, auth.secret, (err, decoded) => {
+  jwt.verify(token, auth.SECRET, (err, decoded) => {
     if (err)
       return res.status(401).send({ error: { status: 401, message: 'Failed to authenticate token' } });
 
@@ -52,7 +52,7 @@ async function login(req, res) {
       // create a token
       var token = jwt.sign(
         { id: rows[0].id, username: rows[0].username },
-        auth.secret,
+        auth.SECRET,
         { expiresIn: 60 * 60 * parseInt(auth.DEF_TOKEN_EXPIRE) }
       );
 
