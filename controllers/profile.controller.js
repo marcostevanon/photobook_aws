@@ -19,8 +19,9 @@ async function getProfileById(req, res) {
 async function getImageByProfileId(req, res) {
     var userId = req.params.userid;
 
-    const query = `SELECT
+    const query = `SELECT 
                         images.id                as post_id,
+                        users.id                 as author_id,
                         users.username           as author_username,
                         users.avatar             as author_avatar_url,
                         images.raw_image_url     as raw_image_url,
@@ -30,14 +31,15 @@ async function getImageByProfileId(req, res) {
                         images.tags              as tags,
                         images.n_votes           as votes_n,
                         images.avg_votes         as votes_avg,
+                        votes.id                 as vote,
                         images.timestamp         as timestamp
                     FROM tsac18_stevanon.images
                         JOIN tsac18_stevanon.users ON tsac18_stevanon.images.id_user = tsac18_stevanon.users.id
-                        LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND votes.id_user = $1
+                        LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image AND votes.id_user = $2
                         WHERE users.id = $1
-                        ORDER BY images.id DESC`;
+                    ORDER BY images.id DESC`;
 
-    pg.query(query, [userId])
+    pg.query(query, [userId, req.token.id])
         .then(db => db.rows.length ? res.json(db.rows) : res.sendStatus(404))
         .catch(err => { console.log(err); res.sendStatus(500); });
 }
