@@ -2,7 +2,6 @@
 
 // import modules to query postgresql
 const pg = require("../config/pg.config").getPool();
-// const pg_options = require('../config/pg.config');
 
 const resis_worker = require('../workers/redis-worker');
 
@@ -53,4 +52,23 @@ async function setVote(req, res) {
         .catch(err => { console.log(err); pg_client.release(); res.sendStatus(500); });
 }
 
-module.exports = { setVote }
+async function getVotes(req, res) {
+    const query = `SELECT votes.id      as vote_id,
+                        votes.value     as value,
+                        votes.timestamp as timestamp,
+                        users.username  as author_username,
+                        users.avatar    as author_avatar_url
+                    FROM tsac18_stevanon.users
+                        JOIN tsac18_stevanon.votes ON users.id = votes.id_user
+                    WHERE votes.id_image = $1;`;
+
+    pg.connect()
+        .then(pg_client => pg_client.query(query, [req.params.postid]))
+        .then(db => {
+            if (db) res.status(200).json(db.rows);
+            else res.sendStatus(400);
+        })
+        .catch(err => { console.log(err); pg_client.release(); res.sendStatus(500); });
+}
+
+module.exports = { setVote, getVotes }

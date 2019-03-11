@@ -9,4 +9,6 @@ const voteController = require('../controllers/vote.controller');
 //*     /api/vote
 router.post('/', verifyToken, voteController.setVote);
 
+router.get('/:postid', verifyToken, voteController.getVotes);
+
 module.exports = router;
