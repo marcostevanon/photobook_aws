@@ -16,6 +16,20 @@ async function getProfileById(req, res) {
         .catch(err => { console.log(err); res.sendStatus(500); });
 }
 
+
+async function getProfileAverageScore(req, res) {
+    var userId = req.params.userid;
+
+    const query = `SELECT avg(votes.value) as value
+                    FROM tsac18_stevanon.votes
+                    WHERE votes.id_user = $1`;
+
+    pg.query(query, [userId])
+        .then(db => db.rows.length ? res.json(db.rows[0].value) : res.sendStatus(404))
+        .catch(err => { console.log(err); res.sendStatus(500); });
+}
+
+
 async function getImageByProfileId(req, res) {
     var userId = req.params.userid;
 
@@ -44,4 +58,4 @@ async function getImageByProfileId(req, res) {
         .catch(err => { console.log(err); res.sendStatus(500); });
 }
 
-module.exports = { getProfileById, getImageByProfileId }
+module.exports = { getProfileById, getProfileAverageScore, getImageByProfileId }

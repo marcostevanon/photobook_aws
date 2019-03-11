@@ -9,6 +9,9 @@ const profileController = require('../controllers/profile.controller');
 //*     /api/profile/:id
 router.get('/:userid', verifyToken, profileController.getProfileById)
 
+//*     /api/profile/:id/vote_avg
+router.get('/:userid/vote_avg', verifyToken, profileController.getProfileAverageScore)
+
 //*     /api/profile/:id/images
 router.get('/:userid/images', verifyToken, profileController.getImageByProfileId)
 
