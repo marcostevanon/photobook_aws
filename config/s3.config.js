@@ -1,10 +1,8 @@
 const AWS = require('aws-sdk');
 
-var bucket;
-if (process.env.NODE_ENV == 'prod')
-    bucket = process.env.BUCKET_PROD;
-else
-    bucket = process.env.BUCKET_STAGE
+var bucket = process.env.NODE_ENV == 'prod'
+    ? process.env.BUCKET_PROD
+    : process.env.BUCKET_STAGE
 
 module.exports = {
     s3Client: new AWS.S3({

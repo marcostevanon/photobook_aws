@@ -3,12 +3,10 @@ const es_config = require('../config/es.config');
 
 var client = new elasticsearch.Client(es_config);
 
-const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg = require('../config/pg.config').getPool();
 
 function updateImagesIndeces() {
     return new Promise((resolve, reject) => {
-        const pg_client = new Client(pg_options);
         const query = `SELECT DISTINCT
                             images.id                as post_id,
                             users.username           as author_username,
@@ -27,12 +25,10 @@ function updateImagesIndeces() {
 
         var newImagesArray_bulk = [];
 
-        pg_client.connect()
-            .then(() => pg_client.query(query))
-            .then(table => {
-                pg_client.end()
+        pg.query(query)
+            .then(db => {
 
-                table.rows.forEach(item => {
+                db.rows.forEach(item => {
                     newImagesArray_bulk.push({
                         index: {
                             _index: "images", _type: "image",
@@ -56,18 +52,15 @@ function updateImagesIndeces() {
 
 function updateUsersIndeces() {
     return new Promise((resolve, reject) => {
-        const pg_client = new Client(pg_options);
         const query = `SELECT DISTINCT id, username, firstname, lastname, avatar
                     FROM tsac18_stevanon.users`;
 
         var newUsersArray_bulk = [];
 
-        pg_client.connect()
-            .then(() => pg_client.query(query))
-            .then(table => {
-                pg_client.end()
+        pg.query(query)
+            .then(db => {
 
-                table.rows.forEach(item => {
+                db.rows.forEach(item => {
                     newUsersArray_bulk.push({
                         index: {
                             _index: "users", _type: "user",

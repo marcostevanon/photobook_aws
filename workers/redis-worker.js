@@ -1,5 +1,4 @@
-const { Client } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg = require('../config/pg.config').getPool();
 
 const redis = require('redis');
 const redis_options = require('../config/redis.config');
@@ -8,7 +7,6 @@ module.exports.generateRatingList = () => {
     console.time('Redis cache recreated');
 
     return new Promise(async (resolve, reject) => {
-        const pg_client = new Client(pg_options);
 
         //Select first 10 photos with higer calculated score [score = (5 * image_average_value) + (3 * number_of_votes)]
         const query = `SELECT DISTINCT images.id,
@@ -31,22 +29,19 @@ module.exports.generateRatingList = () => {
                         ORDER BY score DESC, images.timestamp DESC
                         LIMIT 10;`;
 
-        pg_client.connect()
-            .then(() => {
-                return pg_client.query(query, [5, 3]);
-                // 3 = weigth for the number of votes for every image
-                // 5 = weigth for vote average for every image
-            }).then(table => {
-                pg_client.end();
+        // 3 = weigth for the number of votes for every image
+        // 5 = weigth for vote average for every image
+        pg.query(query, [5, 3])
+            .then(db => {
 
                 // updating redis
                 var redis_client = redis.createClient(redis_options);
                 redis_client.on("error", err => reject(err));
-                redis_client.set("ranking", JSON.stringify(table.rows), args => {
+                redis_client.set("ranking", JSON.stringify(db.rows), args => {
                     redis_client.quit();
                     console.timeEnd('Redis cache recreated');
 
-                    resolve(table.rows);
+                    resolve(db.rows);
                 });
             }).catch(err => reject(err));
     })

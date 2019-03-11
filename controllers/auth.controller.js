@@ -4,8 +4,7 @@ const jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 const bcrypt = require('bcrypt-nodejs');
 
 // import modules to query postgresql
-const { Client: PgClient } = require("pg");
-const pg_options = require('../config/pg.config');
+const pg = require("../config/pg.config").getPool();
 
 const auth = require('../config/auth.config');
 
@@ -20,7 +19,7 @@ function verifyToken(req, res, next) {
     return res.status(403).send({ error: { status: 403, message: 'No token provided' } });
 
   // verifies secret and checks exp
-  jwt.verify(token, auth.secret, (err, decoded) => {
+  jwt.verify(token, auth.SECRET, (err, decoded) => {
     if (err)
       return res.status(401).send({ error: { status: 401, message: 'Failed to authenticate token' } });
 
@@ -32,30 +31,28 @@ function verifyToken(req, res, next) {
 
 async function login(req, res) {
 
-  const pg_client = new PgClient(pg_options);
   const query = `SELECT * FROM tsac18_stevanon.users WHERE username = $1;`;
   const user = req.body.username;
   const pass = req.body.password;
 
-  pg_client.connect()
 
-    // check if user exists
-    .then(() => pg_client.query(query, [user]).then(r => r.rows))
-    .then(table => {
-      pg_client.end();
+  // check if user exists
+  pg.query(query, [user])
+    .then(db => db.rows)
+    .then(rows => {
 
-      if (!table.length)
+      if (!rows.length)
         return res.status(400).json({ message: `User '${user}' does not exist` });
 
       // if the user is found but check the password
-      if (!bcrypt.compareSync(pass, table[0].password))
+      if (!bcrypt.compareSync(pass, rows[0].password))
         return res.status(401).json({ message: "Password not valid" });
 
       // if user is found and password is valid
       // create a token
       var token = jwt.sign(
-        { id: table[0].id, username: table[0].username },
-        auth.secret,
+        { id: rows[0].id, username: rows[0].username },
+        auth.SECRET,
         { expiresIn: 60 * 60 * parseInt(auth.DEF_TOKEN_EXPIRE) }
       );
 
@@ -65,7 +62,7 @@ async function login(req, res) {
         status: 200,
         token,
         expiresIn: 60 * 60 * parseInt(auth.DEF_TOKEN_EXPIRE),
-        user: { id: table[0].id, username: table[0].username, avatar: table[0].avatar }
+        user: { id: rows[0].id, username: rows[0].username, avatar: rows[0].avatar }
       });
       console.log(`Token request by: ${user} - Granted`);
     })
@@ -91,19 +88,16 @@ async function registration(req, res) {
   if (!re.test(String(email).toLowerCase()))
     return res.status(400).send('email not valid');
 
-  const pg_client = new PgClient(pg_options);
   const query = `INSERT INTO tsac18_stevanon.users (firstname, lastname, email, username, password, avatar) VALUES ($1, $2, $3, $4, $5, $6)`;
 
-  pg_client.connect()
-    .then(() => pg_client.query(query, [firstname, lastname ? lastname : null, email, username, password, avatar ? avatar : null]))
-    .then(result => {
-      if (result.rowCount > 0) {
+  pg.query(query, [firstname, lastname ? lastname : null, email, username, password, avatar ? avatar : null])
+    .then(db => {
+      if (db.rowCount > 0) {
         res.sendStatus(204);
         console.log('User registration - ' + JSON.stringify({ firstname, lastname, email, username }));
       }
       else res.status(400).send('username already exist');
     })
-    .then(() => pg_client.end())
     .then(() => { require('../workers/elastic-search.worker').updateUsersIndeces() })
     .catch(err => {
       res.status(400).send('username already exist');
