@@ -1,9 +1,5 @@
 const AWS = require('aws-sdk');
 
-var bucket = process.env.NODE_ENV == 'prod'
-    ? process.env.BUCKET_PROD
-    : process.env.BUCKET_STAGE
-
 module.exports = {
     s3Client: new AWS.S3({
         accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -11,7 +7,7 @@ module.exports = {
         region: process.env.REGION
     }),
     uploadParams: {
-        Bucket: bucket,
+        Bucket: process.env.BUCKET,
         Key: '', // will pass key
         Body: null, // will pass file body
     },
