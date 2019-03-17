@@ -21,6 +21,7 @@ app.use('/api/upload', require('./route/upload.router'));
 app.use('/api/vote', require('./route/vote.router'));
 app.use('/api/profile', require('./route/profile.router'));
 app.use('/api/search', require('./route/search.router'));
+app.get('/', (req, res) => res.send('<h1>It works!</h1>'));
 app.all('*', (req, res) => res.sendStatus(404));
 
 function regenerateCache() {
@@ -31,15 +32,19 @@ function regenerateCache() {
 		.catch(err => console.warn(err));
 }
 
+console.log('Waiting for services start...');
 setTimeout(() => {
 
 	const server = app.listen(process.env.PORT, () => {
 		console.log(`\nApp listening at http://${server.address().address}:${server.address().port}`);
 	});
 
-	regenerateCache();
+	// require('./workers/redis-worker2').generateGallery();
 
 	// Schedule cache regeneration every day at 00:00
 	cron.schedule('0 0 * * *', regenerateCache);
+	regenerateCache();
 
-}, 15000);
+}, 25000);
+
+

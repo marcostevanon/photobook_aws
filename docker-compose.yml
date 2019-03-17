@@ -1,51 +1,76 @@
-version: '3'
+version: "3"
 
 services:
-  elasticsearch:
-    container_name: elasticsearch
-    image: elasticsearch:6.6.1
+  ######### API #########
+  api-server:
+    container_name: api-server
+    build: .
+    depends_on:
+      - elasticsearch
+      - redis
+      - rabbitmq
     volumes:
-      - esdata1:/usr/share/elasticsearch/data
+      - .:/app
+    working_dir: /app
+    env_file:
+      - .env
+    command: npm run prod
+    dns: "8.8.8.8"
     ports:
-      - 9200:9200
-      - 9300:9300
-    networks: 
-      - backend
+      - "${PORT}:${PORT}"
+      - "${PGPORT}:${PGPORT}"
+    networks:
+      - bridge
 
+  ######### REDIS #########
   redis:
     container_name: redis
     image: redis:5.0.3-alpine3.9
+    hostname: redis
     ports:
       - 6379:6379
     volumes:
       - redis-data:/data
-    restart: always
     entrypoint: redis-server --appendonly yes
-    networks: 
-      - backend
+    restart: always
+    networks:
+      - bridge
 
-  api:
-    container_name: photocontest_api
-    build: .
-    depends_on: 
-      - elasticsearch
-      - redis
-    volumes:
-      - .:/app
-      - /app/node_modules
+  ######### ELASTIC SEARCH #########
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:6.6.1
+    hostname: elasticsearch
     environment:
-      - NODE_ENV=stage
-    env_file: .env
+      - cluster.name=photocontest
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
-      - 5671:5671
-    command: ["node", "index.js"]
-    networks: 
-      - backend
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - bridge
+
+  ######### RABBIT MQ #########
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.7-management-alpine
+    hostname: rabbitmq
+    # environment:
+    #   - RABBITMQ_DEFAULT_USER=guest297db5daf898489aa0e2c19b7226b4e3
+    #   - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - bridge
 
 volumes:
-  esdata1:
+  es-data:
     driver: local
   redis-data:
 
-networks: 
-  backend:
+networks:
+  bridge: #
