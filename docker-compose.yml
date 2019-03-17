@@ -8,7 +8,7 @@ services:
     depends_on:
       - elasticsearch
       - redis
-      - rabbitmq
+      # - rabbitmq
     volumes:
       - .:/app
     working_dir: /app
@@ -44,7 +44,7 @@ services:
     environment:
       - cluster.name=photocontest
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - ES_JAVA_OPTS=-Xms300m -Xm300m
     ports:
       - 9200:9200
       - 9300:9300
@@ -54,18 +54,18 @@ services:
       - bridge
 
   ######### RABBIT MQ #########
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3.7-management-alpine
-    hostname: rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=supersecretpassword
-    ports:
-      - 15672:15672
-      - 5672:5672
-    networks:
-      - bridge
+  # rabbitmq:
+  #   container_name: rabbitmq
+  #   image: rabbitmq:3.7-management-alpine
+  #   hostname: rabbitmq
+  #   # environment:
+  #   #   - RABBITMQ_DEFAULT_USER=admin
+  #   #   - RABBITMQ_DEFAULT_PASS=supersecretpassword
+  #   ports:
+  #     - 15672:15672
+  #     - 5672:5672
+  #   networks:
+  #     - bridge
 
 volumes:
   es-data:
