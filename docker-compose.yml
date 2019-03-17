@@ -44,7 +44,7 @@ services:
     environment:
       - cluster.name=photocontest
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
     ports:
       - 9200:9200
       - 9300:9300
@@ -58,9 +58,9 @@ services:
     container_name: rabbitmq
     image: rabbitmq:3.7-management-alpine
     hostname: rabbitmq
-    # environment:
-    #   - RABBITMQ_DEFAULT_USER=guest297db5daf898489aa0e2c19b7226b4e3
-    #   - RABBITMQ_DEFAULT_PASS=guest
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=supersecretpassword
     ports:
       - 15672:15672
       - 5672:5672
