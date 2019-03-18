@@ -45,6 +45,6 @@ setTimeout(() => {
 	cron.schedule('0 0 * * *', regenerateCache);
 	regenerateCache();
 
-}, 50000);
+}, 45000);
 
 
