@@ -2,14 +2,13 @@ image: ubuntu:18:10
 
 stages:
   - deploy
-
-before_script:
-  - apt-get update -qq && apt-get install -y -qq sshpass
-
+  
 #################### PRODUCTION ####################
 
 deploy-prod:
   stage: deploy
+  before_script:
+  - apt-get update -qq && apt-get install -y -qq sshpass
   script:
     - sshpass -V
   #   - export SSHPASS=$USER_PASS_PROD
@@ -24,6 +23,8 @@ deploy-prod:
 
 deploy-stage:
   stage: deploy
+  before_script:
+  - apt-get update -qq && apt-get install -y -qq sshpass
   script:
     - sshpass -V
     - export SSHPASS=$USER_PASS_STAGE
