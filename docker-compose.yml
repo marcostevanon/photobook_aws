@@ -44,7 +44,7 @@ services:
     environment:
       - cluster.name=photocontest
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms300m -Xm300m
+      - ES_JAVA_OPTS=-Xms300m -Xmx300m
     ports:
       - 9200:9200
       - 9300:9300

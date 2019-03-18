@@ -1,0 +1,34 @@
+image: ubuntu:18:10
+
+stages:
+  - deploy
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq sshpass
+
+#################### PRODUCTION ####################
+
+deploy-prod:
+  stage: deploy
+  script:
+    - sshpass -V
+  #   - export SSHPASS=$USER_PASS_PROD
+  #   - sshpass -e scp -o stricthostkeychecking=no -r . $USER_NAME_PROD@$HOST_NAME_PROD:/home/marco/photocontest/backend
+  environment:
+    name: production
+  only:
+    - master
+    - tags
+
+#################### STAGING ####################
+
+deploy-stage:
+  stage: deploy
+  script:
+    - sshpass -V
+    - export SSHPASS=$USER_PASS_STAGE
+    - sshpass -e scp -o stricthostkeychecking=no -r . $USER_NAME_STAGE@$HOST_NAME_STAGE:/tmp/photocontest
+  environment:
+    name: staging
+  only:
+    - dev
