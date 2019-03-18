@@ -28,7 +28,8 @@ deploy-stage:
   script:
     - sshpass -V
     - export SSHPASS=$USER_PASS_STAGE
-    - sshpass -e scp -o stricthostkeychecking=no -r . $USER_NAME_STAGE@$HOST_NAME_STAGE:/tmp/photocontest
+    - ls -al
+    - sshpass -e scp -o stricthostkeychecking=no -r ./ $USER_NAME_STAGE@$HOST_NAME_STAGE:/tmp/photocontest
   environment:
     name: staging
   only:
