@@ -11,8 +11,10 @@ deploy-prod:
   - apt-get update -qq && apt-get install -y -qq sshpass
   script:
     - sshpass -V
-  #   - export SSHPASS=$USER_PASS_PROD
-  #   - sshpass -e scp -o stricthostkeychecking=no -r . $USER_NAME_PROD@$HOST_NAME_PROD:/home/marco/photocontest/backend
+    # - export SSHPASS=$USER_PASS_PROD
+    # - sshpass -e scp -o stricthostkeychecking=no -r . $USER_NAME_PROD@$HOST_NAME_PROD:/home/marco/project/its-photocontest/backend
+    # - docker-compose down
+    # - docker-compose up -d
   environment:
     name: production
   only:
@@ -29,7 +31,9 @@ deploy-stage:
     - sshpass -V
     - export SSHPASS=$USER_PASS_STAGE
     - ls -al && pwd
-    - sshpass -e scp -o stricthostkeychecking=no -r * $USER_NAME_STAGE@$HOST_NAME_STAGE:/tmp/photocontest
+    - sshpass -e scp -o stricthostkeychecking=no -r * $USER_NAME_STAGE@$HOST_NAME_STAGE:/home/marco/project/its-photocontest/backend
+    - docker-compose down
+    - docker-compose up -d
   environment:
     name: staging
   only:
