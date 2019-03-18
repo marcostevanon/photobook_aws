@@ -32,8 +32,7 @@ deploy-stage:
     - export SSHPASS=$USER_PASS_STAGE
     - ls -al && pwd
     - sshpass -e scp -o stricthostkeychecking=no -r * $USER_NAME_STAGE@$HOST_NAME_STAGE:/home/marco/project/its-photocontest/backend
-    - docker-compose down
-    - docker-compose up -d
+    - sshpass -e ssh $USER_NAME_STAGE@$HOST_NAME_STAGE "cd /home/marco/project/its-photocontest/backend && docker-compose down && docker-compose up -d"
   environment:
     name: staging
   only:
