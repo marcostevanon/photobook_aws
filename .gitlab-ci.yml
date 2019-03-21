@@ -1,3 +1,20 @@
+#################### STAGING ####################
+deploy-stage:
+  stage: deploy
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq sshpass
+    - sshpass -V
+    - export SSHPASS=$USER_PASS_STAGE
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - ls -al && pwd
+  script:
+    - sshpass -e ssh $USER_NAME_STAGE@$HOST_NAME_STAGE "cd ~/project/its-photocontest/backend && git checkout dev && git pull && docker-compose down && docker-compose -f docker-compose-stage.yml up -d"
+  environment:
+    name: staging
+  only:
+    - dev
+
 #################### PRODUCTION ####################
 deploy-prod:
   stage: deploy
@@ -13,19 +30,3 @@ deploy-prod:
   only:
     - master
   # - tags
-
-#################### STAGING ####################
-deploy-stage:
-  stage: deploy
-  before_script:
-    - apt-get update -qq && apt-get install -y -qq sshpass
-    - sshpass -V
-    - export SSHPASS=$USER_PASS_STAGE
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - ls -al && pwd
-  script:
-    - sshpass -e ssh $USER_NAME_STAGE@$HOST_NAME_STAGE "cd ~/project/its-photocontest/backend && git checkout dev && git pull && docker-compose down && docker-compose -f docker-compose-stage.yml up -d"
-  environment:
-    name: staging
-  only:
-    - dev
