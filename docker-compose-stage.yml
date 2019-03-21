@@ -14,7 +14,7 @@ services:
     working_dir: /app
     env_file:
       - .env
-    command: npm run prod
+    command: npm run stage
     dns: "8.8.8.8"
     ports:
       - "${PORT}:${PORT}"
