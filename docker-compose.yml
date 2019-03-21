@@ -20,7 +20,7 @@ services:
       - "${PORT}:${PORT}"
       - "${PGPORT}:${PGPORT}"
     networks:
-      - bridge
+      - default
 
   ######### REDIS #########
   redis:
@@ -34,7 +34,7 @@ services:
     entrypoint: redis-server --appendonly yes
     restart: always
     networks:
-      - bridge
+      - default
 
   ######### ELASTIC SEARCH #########
   elasticsearch:
@@ -51,7 +51,7 @@ services:
     volumes:
       - es-data:/usr/share/elasticsearch/data
     networks:
-      - bridge
+      - default
 
   ######### RABBIT MQ #########
   # rabbitmq:
@@ -65,7 +65,7 @@ services:
   #     - 15672:15672
   #     - 5672:5672
   #   networks:
-  #     - bridge
+  #     - default
 
 volumes:
   es-data:
@@ -73,4 +73,5 @@ volumes:
   redis-data:
 
 networks:
-  bridge: #
+  default:
+    driver: bridge
