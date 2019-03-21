@@ -12,7 +12,7 @@ deploy-prod:
     name: production
   only:
     - master
-    - tags
+  # - tags
 
 #################### STAGING ####################
 deploy-stage:
