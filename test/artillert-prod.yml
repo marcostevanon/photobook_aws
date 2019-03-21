@@ -1,0 +1,30 @@
+config:
+  target: 'http://steva01:5671/api'
+  phases:
+    - duration: 60
+      arrivalRate: 20
+  defaults:
+    headers:
+      x-access-token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJtYXJjbyIsImlhdCI6MTU1MzA3MzMyOSwiZXhwIjoxNjA0OTEzMzI5fQ.ual0JrBPShMMp3BOIPUw2-cS5fKie4SnaVCCbNrMkPs'
+scenarios:
+  - flow:
+    - get:
+        url: "/gallery"
+    - get:
+        url: "/gallery/ranking/"
+    - get:
+        url: "/profile/2"
+    - get:
+        url: "/profile/3"
+    - get:
+        url: "/gallery/ranking/"
+    - get:
+        url: "/search/ocean"
+    - get:
+        url: "/search/notfound"
+    - get:
+        url: "/search/piva"
+    - get:
+        url: "/profile/3/images"
+    - get:
+        url: "/profile/2/images"

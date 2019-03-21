@@ -54,7 +54,7 @@ async function uploadImage(req, res) {
                 res.json(msg);
 
                 var queue = 'photo_processing';
-                mq.connect(mq_options)
+                mq.connect(mq_options.rabbitMQconnectionstring)
                     .then(conn => conn.createChannel())
                     .then(ch => ch.assertQueue(queue, { persistent: true })
                         .then(ok => ch.sendToQueue(queue, Buffer.from(JSON.stringify(msg)))))
