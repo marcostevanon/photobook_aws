@@ -1,20 +1,13 @@
-image: debian
-
-stages:
-  - deploy
-
 #################### PRODUCTION ####################
-
 deploy-prod:
   stage: deploy
   before_script:
-  - apt-get update -qq && apt-get install -y -qq sshpass
+    - mkdir -p ~/.ssh
+    - echo -e "$SSH_PRIVATE_KEY_PROD" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'   
   script:
-    - sshpass -V
-    # - export SSHPASS=$USER_PASS_PROD
-    # - sshpass -e scp -o stricthostkeychecking=no -r . $USER_NAME_PROD@$HOST_NAME_PROD:/home/marco/project/its-photocontest/backend
-    # - docker-compose down
-    # - docker-compose up -d
+    - ssh $USER_NAME_PROD@$HOST_NAME_PROD "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
   environment:
     name: production
   only:
@@ -22,17 +15,16 @@ deploy-prod:
     - tags
 
 #################### STAGING ####################
-
 deploy-stage:
   stage: deploy
   before_script:
-  - apt-get update -qq && apt-get install -y -qq sshpass
-  script:
+    - apt-get update -qq && apt-get install -y -qq sshpass
     - sshpass -V
     - export SSHPASS=$USER_PASS_STAGE
     - ls -al && pwd
-    - sshpass -e scp -o stricthostkeychecking=no -r * $USER_NAME_STAGE@$HOST_NAME_STAGE:/home/marco/project/its-photocontest/backend
-    - sshpass -e ssh $USER_NAME_STAGE@$HOST_NAME_STAGE "cd /home/marco/project/its-photocontest/backend && docker-compose down && docker-compose up -d"
+  script:
+    - sshpass -e scp -o stricthostkeychecking=no -r * $USER_NAME_STAGE@$HOST_NAME_STAGE:~/project/its-photocontest/backend
+    - sshpass -e ssh $USER_NAME_STAGE@$HOST_NAME_STAGE "cd ~/project/its-photocontest/backend && docker-compose down && docker-compose -f docker-compose-stage.yml up -d"
   environment:
     name: staging
   only:
