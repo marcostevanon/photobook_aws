@@ -1,5 +1,6 @@
 # Some dependences require ubuntu, don't use node image
-FROM ubuntu:18.10  
+FROM ubuntu:18.10
+WORKDIR /home/app
 COPY package.json .
 RUN apt-get update -yq
 RUN apt-get install curl gnupg -yq
