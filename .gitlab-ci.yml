@@ -51,6 +51,7 @@ deploy-prod-aws:
   script:
     - ssh $USERNAME_AWS@$HOSTNAME_AWS "mkdir -p $DEPLOY_PATH_AWS"
     - scp -rp ./* $USERNAME_AWS@$HOSTNAME_AWS:$DEPLOY_PATH_AWS
+    - scp -rp .env $USERNAME_AWS@$HOSTNAME_AWS:$DEPLOY_PATH_AWS
     - |
       ssh $USERNAME_AWS@$HOSTNAME_AWS "cd $DEPLOY_PATH_AWS && 
         docker-compose -f docker-compose-aws.yml up --build --force-recreate -d"
@@ -60,7 +61,7 @@ deploy-prod-aws:
     - tags
 
 # PRODUCTION VULTR
-deploy-dev-vultr:
+deploy-prod-vultr:
   stage: deploy
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
@@ -73,6 +74,7 @@ deploy-dev-vultr:
   script:
     - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "mkdir -p $DEPLOY_PATH_VULTR"
     - scp -rp ./* $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
+    - scp -rp .env $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
     - |
       ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd $DEPLOY_PATH_VULTR && 
         docker-compose -f docker-compose-vultr.yml up --build --force-recreate -d"
