@@ -1,5 +1,5 @@
 # Some dependences require ubuntu, don't use node image
-FROM ubuntu:18.10
+FROM debian:latest
 WORKDIR /home/app
 COPY package.json .
 RUN apt-get update -yq
