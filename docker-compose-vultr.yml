@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  api-server:
+    container_name: api-server
+    build: .
+    labels:
+      - "traefik.frontend.rule=Host:api.photocontest.marcostevanon.ovh"
+      - "traefik.port=${PORT}"
+      - "traefik.enable=true"
+    volumes:
+      - .:/app
+    working_dir: /app
+    env_file:
+      - .env
+    command: npm run prod-vultr
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

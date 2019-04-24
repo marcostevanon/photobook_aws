@@ -28,7 +28,7 @@ app.get('/', (req, res) => res.send('<h1>It works!</h1>'));
 app.all('*', (req, res) => res.sendStatus(404));
 
 console.log('Waiting for services start...');
-setTimeout(() => {
+// setTimeout(() => {
 
 	const server = app.listen(process.env.PORT, () => {
 		console.log(`\nApp listening at http://${server.address().address}:${server.address().port}`);
@@ -40,7 +40,7 @@ setTimeout(() => {
 	cron.schedule('0 0 * * *', regenerateCache);
 	regenerateCache();
 
-}, 45000);
+// }, 45000);
 
 
 

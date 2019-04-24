@@ -1,32 +1,82 @@
-#################### STAGING ####################
-deploy-stage:
-  stage: deploy
-  before_script:
-    - apt-get update -qq && apt-get install -y -qq sshpass
-    - sshpass -V
-    - export SSHPASS=$USER_PASS_STAGE
-    - mkdir -p ~/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - ls -al && pwd
-  script:
-    - sshpass -e ssh $USER_NAME_STAGE@$HOST_NAME_STAGE "cd ~/project/its-photocontest/backend && git checkout dev && git pull && docker-compose down && docker-compose -f docker-compose-stage.yml up -d"
-  environment:
-    name: staging
-  only:
-    - dev
+stages:
+  - deploy
+  - down
 
-#################### PRODUCTION ####################
-deploy-prod:
+variables:
+  DEPLOY_PATH_AWS: "/home/ubuntu/photocontest-deploy/backend"
+  DEPLOY_PATH_VULTR: "/home/marco/gitlab-ws/photocontest-autodeploy/prod/backend"
+
+before_script:
+  - |
+      ENVIRONMENTS=$(cat << EOF
+        PORT = $PORT
+        JWT_SECRET = $JWT_SECRET
+        JWT_TOKEN_EXPIRATION = $JWT_TOKEN_EXPIRATION
+        AWS_ACCESS_KEY = $AWS_ACCESS_KEY
+        AWS_SECRET_ACCESS_KEY = $AWS_SECRET_ACCESS_KEY
+        REGION = $REGION
+        BUCKET = $BUCKET
+        CLOUDFRONT = $CLOUDFRONT
+        PGHOST = $PGHOST
+        PGPORT = $PGPORT
+        PGDATABASE = $PGDATABASE
+        PGUSER = $PGUSER
+        PGPASSWORD = $PGPASSWORD
+        REDIS_HOSTNAME_AWS = $REDIS_HOSTNAME_AWS
+        REDIS_PORT_AWS = $REDIS_PORT_AWS
+        REDIS_PASS_AWS = $REDIS_PASS_AWS
+        REDIS_HOST_VULTR = $REDIS_HOST_VULTR
+        REDIS_PORT_VULTR = $REDIS_PORT_VULTR
+        REDIS_PASS_VULTR = $REDIS_PASS_VULTR
+        ES_HOSTNAME_AWS = $ES_HOSTNAME_AWS
+        ES_HOSTNAME_VULTR = $ES_HOSTNAME_VULTR
+        RMQ_HOSTNAME_AWS = $RMQ_HOSTNAME_AWS
+        RMQ_HOSTNAME_VULTR = $RMQ_HOSTNAME_VULTR
+        AZURE_COGNITIVE_KEY = $AZURE_COGNITIVE_KEY
+      EOF
+      )
+  - echo "$ENVIRONMENTS" > .env
+
+# PRODUCTION AWS
+deploy-prod-aws:
   stage: deploy
   before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$PRIVATE_KEY_AWS" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
-    - echo -e "$SSH_PRIVATE_KEY_PROD" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $HOSTNAME_AWS >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh $USER_NAME_PROD@$HOST_NAME_PROD "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
+    - ssh $USERNAME_AWS@$HOSTNAME_AWS "mkdir -p $DEPLOY_PATH_AWS"
+    - scp -rp ./* $USERNAME_AWS@$HOSTNAME_AWS:$DEPLOY_PATH_AWS
+    - |
+      ssh $USERNAME_AWS@$HOSTNAME_AWS "cd $DEPLOY_PATH_AWS && 
+        docker-compose -f docker-compose-aws.yml up --build --force-recreate -d"
   environment:
-    name: production
+    name: production-aws
   only:
-    - master
-  # - tags
+    - tags
+
+# PRODUCTION VULTR
+deploy-dev-vultr:
+  stage: deploy
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$PRIVATE_KEY_VULTR" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh $USERNAME_AWS@$HOSTNAME_VULTR "mkdir -p $DEPLOY_PATH_VULTR"
+    - scp -rp ./* $USERNAME_AWS@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
+    - |
+      ssh $USERNAME_AWS@$HOSTNAME_VULTR "cd $DEPLOY_PATH_VULTR && 
+        docker-compose -f docker-compose-vultr.yml up --build --force-recreate -d"
+    # - ssh $USER_NAME_PROD@$HOST_NAME_PROD "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
+  environment:
+    name: production-vultr
+  when: manual

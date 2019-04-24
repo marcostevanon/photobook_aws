@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "stage": "NODE_ENV=stage node server.js",
-    "prod": "NODE_ENV=prod node server.js"
+    "prod-aws": "NODE_ENV=prod-aws node server.js",
+    "prod-vultr": "NODE_ENV=prod-vultr node server.js"
   },
   "repository": {
     "type": "git",

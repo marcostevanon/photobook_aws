@@ -24,10 +24,12 @@ function updateImagesIndeces() {
                             LEFT JOIN tsac18_stevanon.votes ON images.id = votes.id_image`;
 
         var newImagesArray_bulk = [];
-
+        // client.indices.exists({ index: "images" })
+        // client.indices.create({ index: "images"})
+        //     .then(() =>
         pg.query(query)
+            // )
             .then(db => {
-
                 db.rows.forEach(item => {
                     newImagesArray_bulk.push({
                         index: {
@@ -57,9 +59,11 @@ function updateUsersIndeces() {
 
         var newUsersArray_bulk = [];
 
+        // client.indices.create({ index: "users" })
+        //     .then(() =>
         pg.query(query)
+            // )
             .then(db => {
-
                 db.rows.forEach(item => {
                     newUsersArray_bulk.push({
                         index: {
@@ -76,7 +80,7 @@ function updateUsersIndeces() {
             })
             .then(resp => {
                 console.log("ES - Users OK \t-> count:", resp.items.length);
-                resolve(resp.items.length)
+                resolve(resp.items)
             })
             .catch(err => reject(err))
     })
