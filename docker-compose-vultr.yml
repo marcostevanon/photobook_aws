@@ -7,7 +7,7 @@ services:
     restart: always
     labels:
       - "traefik.frontend.rule=Host:api.photocontest.marcostevanon.ovh"
-      - "traefik.port=${PORT}"
+      - "traefik.port=5671"
       - "traefik.enable=true"
     env_file:
       - .env
