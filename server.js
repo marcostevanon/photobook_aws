@@ -18,12 +18,12 @@ app.use(cors());
 app.use(morgan(':date[iso] [:response-time[digits]ms] :remote-addr :method :url :status \t :referrer'));
 app.use(body_parser.json());
 
-app.use('/api/auth', require('./route/auth.router'))
-app.use('/api/gallery', require('./route/gallery.router'));
-app.use('/api/upload', require('./route/upload.router'));
-app.use('/api/vote', require('./route/vote.router'));
-app.use('/api/profile', require('./route/profile.router'));
-app.use('/api/search', require('./route/search.router'));
+app.use('/auth', require('./route/auth.router'))
+app.use('/gallery', require('./route/gallery.router'));
+app.use('/upload', require('./route/upload.router'));
+app.use('/vote', require('./route/vote.router'));
+app.use('/profile', require('./route/profile.router'));
+app.use('/search', require('./route/search.router'));
 app.get('/', (req, res) => res.send('<h1>It works!</h1>'));
 app.all('*', (req, res) => res.sendStatus(404));
 
