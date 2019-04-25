@@ -8,6 +8,7 @@ variables:
   DEPLOY_PATH_VULTR: "/home/marco/gitlab-ws/photocontest-autodeploy/prod/backend"
 
 build-env-file:
+  image: alpine
   stage: build
   script:
     - |
@@ -69,6 +70,7 @@ deploy-prod-aws:
 
 # PRODUCTION VULTR
 deploy-prod-vultr:
+  image: docker
   stage: deploy
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
