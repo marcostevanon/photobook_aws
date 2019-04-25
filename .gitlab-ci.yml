@@ -79,12 +79,20 @@ deploy-prod-vultr:
     - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "mkdir -p $DEPLOY_PATH_VULTR"
-    - scp -rp ./* $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
-    - scp -rp .env $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
-    - |
-      ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd $DEPLOY_PATH_VULTR && 
-        docker-compose -f docker-compose-vultr.yml up --build --force-recreate -d"
+    - docker build -t $CI_REGISTRY_IMAGE/its-photocontest/web-client:$CI_COMMIT_TAG .
+    - docker login $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/its-photocontest/web-client:$CI_COMMIT_TAG
+    - docker rmi $CI_REGISTRY_IMAGE/its-photocontest/web-client:$CI_COMMIT_TAG
+    
+
+
+    # - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "mkdir -p $DEPLOY_PATH_VULTR"
+    # - scp -rp ./* $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
+    # - scp -rp .env $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
+    # - |
+    #   ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd $DEPLOY_PATH_VULTR && 
+    #     docker-compose -f docker-compose-vultr.yml up --build --force-recreate -d"
+
     # - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
   environment:
     name: production-vultr
