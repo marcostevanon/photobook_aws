@@ -85,7 +85,7 @@ deploy-prod-vultr:
   #   - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
   #   - chmod 644 ~/.ssh/known_hosts
   before_script:
-    - docker login $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build -t $IMAGE_TAG .
     - docker push $IMAGE_TAG
