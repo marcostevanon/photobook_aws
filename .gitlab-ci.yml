@@ -3,13 +3,13 @@ stages:
   - deploy
   - down
 
-services:
-  - docker:dind
+# services:
+#   - docker:dind
 
 variables:
   DEPLOY_PATH_AWS: "/home/ubuntu/photocontest-deploy/backend"
   DEPLOY_PATH_VULTR: "/home/marco/gitlab-ws/photocontest-autodeploy/prod/backend"
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  # IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
 build-env-file:
   image: alpine
@@ -76,31 +76,26 @@ deploy-prod-aws:
 deploy-prod-vultr:
   image: docker
   stage: deploy
-  # before_script:
-  #   - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-  #   - eval $(ssh-agent -s)
-  #   - echo "$PRIVATE_KEY_VULTR" | tr -d '\r' | ssh-add - > /dev/null
-  #   - mkdir -p ~/.ssh
-  #   - chmod 700 ~/.ssh
-  #   - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
-  #   - chmod 644 ~/.ssh/known_hosts
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$PRIVATE_KEY_VULTR" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
-    - docker rmi $IMAGE_TAG
-
-
-
-    # - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "mkdir -p $DEPLOY_PATH_VULTR"
-    # - scp -rp ./* $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
-    # - scp -rp .env $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
-    # - |
-    #   ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd $DEPLOY_PATH_VULTR && 
-    #     docker-compose -f docker-compose-vultr.yml up --build --force-recreate -d"
-
-    # - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
+  #   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  #   - docker build -t $IMAGE_TAG .
+  #   - docker push $IMAGE_TAG
+  #   - docker rmi $IMAGE_TAG
+    - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "mkdir -p $DEPLOY_PATH_VULTR"
+    - scp -rp ./* $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
+    - scp -rp .env $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
+    - |
+      ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd $DEPLOY_PATH_VULTR && 
+        docker-compose -f docker-compose-vultr.yml up --build --force-recreate -d"
+    #  - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
   environment:
     name: production-vultr
   when: manual
