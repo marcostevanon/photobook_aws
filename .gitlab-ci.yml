@@ -85,7 +85,7 @@ deploy-prod-vultr:
   #   - chmod 644 ~/.ssh/known_hosts
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
-    - docker login $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker login $CI_DEPLOY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker rmi $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
 
