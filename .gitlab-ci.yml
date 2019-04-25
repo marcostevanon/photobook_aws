@@ -9,6 +9,7 @@ services:
 variables:
   DEPLOY_PATH_AWS: "/home/ubuntu/photocontest-deploy/backend"
   DEPLOY_PATH_VULTR: "/home/marco/gitlab-ws/photocontest-autodeploy/prod/backend"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
 build-env-file:
   image: alpine
@@ -83,11 +84,12 @@ deploy-prod-vultr:
   #   - chmod 700 ~/.ssh
   #   - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
   #   - chmod 644 ~/.ssh/known_hosts
+  before_script:
+    - docker login $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
-    - docker login $CI_DEPLOY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    - docker rmi $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+    - docker rmi $IMAGE_TAG
 
 
 
