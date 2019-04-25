@@ -70,8 +70,8 @@ deploy-prod-aws:
 
 # PRODUCTION VULTR
 deploy-prod-vultr:
-  image: docker
-  stage: gitlab/dind
+  image: gitlab/dind
+  stage: deploy
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     - eval $(ssh-agent -s)
