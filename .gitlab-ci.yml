@@ -70,16 +70,16 @@ deploy-prod-aws:
 
 # PRODUCTION VULTR
 deploy-prod-vultr:
-  image: gitlab/dind
+  image: docker
   stage: deploy
-  before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-    - eval $(ssh-agent -s)
-    - echo "$PRIVATE_KEY_VULTR" | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
+  # before_script:
+  #   - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+  #   - eval $(ssh-agent -s)
+  #   - echo "$PRIVATE_KEY_VULTR" | tr -d '\r' | ssh-add - > /dev/null
+  #   - mkdir -p ~/.ssh
+  #   - chmod 700 ~/.ssh
+  #   - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
+  #   - chmod 644 ~/.ssh/known_hosts
   script:
     - docker build -t $CI_REGISTRY_IMAGE/its-photocontest/backend:$CI_COMMIT_TAG .
     - docker login $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
