@@ -3,6 +3,9 @@ stages:
   - deploy
   - down
 
+services:
+  - docker:dind
+
 variables:
   DEPLOY_PATH_AWS: "/home/ubuntu/photocontest-deploy/backend"
   DEPLOY_PATH_VULTR: "/home/marco/gitlab-ws/photocontest-autodeploy/prod/backend"
