@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prod-aws": "NODE_ENV=prod-aws node server.js",
-    "prod-vultr": "NODE_ENV=prod-vultr node server.js"
+    "prod-do": "NODE_ENV=prod-do node server.js"
   },
   "repository": {
     "type": "git",

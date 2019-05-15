@@ -8,8 +8,8 @@ stages:
 
 variables:
   DEPLOY_PATH_AWS: "/home/ubuntu/photocontest-deploy/backend"
-  DEPLOY_PATH_VULTR: "/home/marco/gitlab-ws/photocontest-autodeploy/prod/backend"
-  # IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  DEPLOY_PATH_DO: "/home/marco/gitlab-ws/photocontest-autodeploy/prod"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
 build-env-file:
   image: alpine
@@ -18,29 +18,29 @@ build-env-file:
     - |
         ENVIRONMENTS=$(cat << EOF
           PORT = $PORT
-          JWT_SECRET = $JWT_SECRET
-          JWT_TOKEN_EXPIRATION = $JWT_TOKEN_EXPIRATION
-          AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID
-          AWS_SECRET_ACCESS_KEY = $AWS_SECRET_ACCESS_KEY
-          REGION = $REGION
-          BUCKET = $BUCKET
-          CLOUDFRONT = $CLOUDFRONT
-          PGHOST = $PGHOST
-          PGPORT = $PGPORT
-          PGDATABASE = $PGDATABASE
-          PGUSER = $PGUSER
-          PGPASSWORD = $PGPASSWORD
-          REDIS_HOSTNAME_AWS = $REDIS_HOSTNAME_AWS
-          REDIS_PORT_AWS = $REDIS_PORT_AWS
-          REDIS_PASS_AWS = $REDIS_PASS_AWS
-          REDIS_HOST_VULTR = $REDIS_HOST_VULTR
-          REDIS_PORT_VULTR = $REDIS_PORT_VULTR
-          REDIS_PASS_VULTR = $REDIS_PASS_VULTR
-          ES_HOSTNAME_AWS = $ES_HOSTNAME_AWS
-          ES_HOSTNAME_VULTR = $ES_HOSTNAME_VULTR
-          RMQ_HOSTNAME_AWS = $RMQ_HOSTNAME_AWS
-          RMQ_HOSTNAME_VULTR = $RMQ_HOSTNAME_VULTR
-          AZURE_COGNITIVE_KEY = $AZURE_COGNITIVE_KEY
+          JWT_SECRET=$JWT_SECRET
+          JWT_TOKEN_EXPIRATION=$JWT_TOKEN_EXPIRATION
+          AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          REGION=$REGION
+          BUCKET=$BUCKET
+          CLOUDFRONT=$CLOUDFRONT
+          PGHOST=$PGHOST
+          PGPORT=$PGPORT
+          PGDATABASE=$PGDATABASE
+          PGUSER=$PGUSER
+          PGPASSWORD=$PGPASSWORD
+          REDIS_HOSTNAME_AWS=$REDIS_HOSTNAME_AWS
+          REDIS_PORT_AWS=$REDIS_PORT_AWS
+          REDIS_PASS_AWS=$REDIS_PASS_AWS
+          REDIS_HOST_VULTR=$REDIS_HOST_VULTR
+          REDIS_PORT_VULTR=$REDIS_PORT_VULTR
+          REDIS_PASS_VULTR=$REDIS_PASS_VULTR
+          ES_HOSTNAME_AWS=$ES_HOSTNAME_AWS
+          ES_HOSTNAME_VULTR=$ES_HOSTNAME_VULTR
+          RMQ_HOSTNAME_AWS=$RMQ_HOSTNAME_AWS
+          RMQ_HOSTNAME_VULTR=$RMQ_HOSTNAME_VULTR
+          AZURE_COGNITIVE_KEY=$AZURE_COGNITIVE_KEY
         EOF
         )
     - echo "$ENVIRONMENTS" > .env
@@ -72,30 +72,68 @@ deploy-prod-aws:
   only:
     - tags
 
-# PRODUCTION VULTR
-deploy-prod-vultr:
-  # image: docker
+# PRODUCTION DO
+build-prod-do:
+  stage: build
+  image: docker
+  services:
+    - docker:dind
+  before_script:
+    - ''
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE_TAG --no-cache .
+    - docker push $IMAGE_TAG
+    - docker rmi $IMAGE_TAG
+
+deploy-prod-do:
   stage: deploy
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     - eval $(ssh-agent -s)
-    - echo "$PRIVATE_KEY_VULTR" | tr -d '\r' | ssh-add - > /dev/null
+    - echo "$PRIVATE_KEY_DO" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan $HOSTNAME_VULTR >> ~/.ssh/known_hosts
+    - ssh-keyscan $HOSTNAME_DO >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-  script:
-  #   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  #   - docker build -t $IMAGE_TAG .
-  #   - docker push $IMAGE_TAG
-  #   - docker rmi $IMAGE_TAG
-    - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "mkdir -p $DEPLOY_PATH_VULTR"
-    - scp -rp ./* $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
-    - scp -rp .env $USERNAME_VULTR@$HOSTNAME_VULTR:$DEPLOY_PATH_VULTR
     - |
-      ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd $DEPLOY_PATH_VULTR && 
-        docker-compose -f docker-compose-vultr.yml up --build --force-recreate -d"
-    #  - ssh $USERNAME_VULTR@$HOSTNAME_VULTR "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
+      ENVIRONMENTS=$(cat << EOF
+        PORT = $PORT
+        JWT_SECRET=$JWT_SECRET
+        JWT_TOKEN_EXPIRATION=$JWT_TOKEN_EXPIRATION
+        AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+        REGION=$REGION
+        BUCKET=$BUCKET
+        CLOUDFRONT=$CLOUDFRONT
+        PGHOST=$PGHOST
+        PGPORT=$PGPORT
+        PGDATABASE=$PGDATABASE
+        PGUSER=$PGUSER
+        PGPASSWORD=$PGPASSWORD
+        REDIS_HOSTNAME_AWS=$REDIS_HOSTNAME_AWS
+        REDIS_PORT_AWS=$REDIS_PORT_AWS
+        REDIS_PASS_AWS=$REDIS_PASS_AWS
+        REDIS_HOST_VULTR=$REDIS_HOST_VULTR
+        REDIS_PORT_VULTR=$REDIS_PORT_VULTR
+        REDIS_PASS_VULTR=$REDIS_PASS_VULTR
+        ES_HOSTNAME_AWS=$ES_HOSTNAME_AWS
+        ES_HOSTNAME_VULTR=$ES_HOSTNAME_VULTR
+        RMQ_HOSTNAME_AWS=$RMQ_HOSTNAME_AWS
+        RMQ_HOSTNAME_VULTR=$RMQ_HOSTNAME_VULTR
+        AZURE_COGNITIVE_KEY=$AZURE_COGNITIVE_KEY
+      EOF
+      )
+    - echo "$ENVIRONMENTS" > .env
+  script:
+    - ssh $USERNAME_DO@$HOSTNAME_DO -p $PORT_DO "mkdir -p $DEPLOY_PATH_DO"
+    - scp -P $PORT_DO -rp docker-compose-do.yml .env $USERNAME_DO@$HOSTNAME_DO:$DEPLOY_PATH_DO
+    - |
+      ssh $USERNAME_DO@$HOSTNAME_DO -p $PORT_DO "cd $DEPLOY_PATH_DO && 
+        docker-compose -f docker-compose-do.yml pull &&
+        docker-compose -f docker-compose-do.yml up --build --force-recreate -d"
   environment:
-    name: production-vultr
-  when: manual
+    name: production-do
+    url: https://api.photocontest.marcostevanon.ovh/healthcheck
+  when:
+    manual
