@@ -11,7 +11,7 @@ services:
       - "traefik.enable=true"
     env_file:
       - .env
-    command: npm run prod-vultr
+    command: npm run prod-do
     networks:
       - traefik
 
