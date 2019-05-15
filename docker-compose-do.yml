@@ -3,7 +3,7 @@ version: "3"
 services:
   api.photocontest.marcostevanon.ovh:
     container_name: api.photocontest.marcostevanon.ovh
-    image: registry.gitlab.com/its-photocontest/backend
+    image: registry.gitlab.com/its-photocontest/backend:dev
     restart: always
     labels:
       - "traefik.frontend.rule=Host:api.photocontest.marcostevanon.ovh"
