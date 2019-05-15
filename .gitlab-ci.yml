@@ -94,7 +94,7 @@ deploy-prod-do:
     - echo "$PRIVATE_KEY_DO" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan $HOSTNAME_DO >> ~/.ssh/known_hosts
+    - ssh-keyscan -p $PORT_DO $HOSTNAME_DO >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - |
       ENVIRONMENTS=$(cat << EOF
