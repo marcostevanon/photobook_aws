@@ -8,7 +8,7 @@ stages:
 
 variables:
   DEPLOY_PATH_AWS: "/home/ubuntu/photocontest-deploy/backend"
-  DEPLOY_PATH_DO: "/home/marco/gitlab-ws/photocontest-autodeploy/prod"
+  DEPLOY_PATH_DO: "/home/marco/gitlab-ws/photocontest-autodeploy/backend"
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
 build-env-file:
