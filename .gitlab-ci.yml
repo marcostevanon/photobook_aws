@@ -3,77 +3,11 @@ stages:
   - deploy
   - down
 
-# services:
-#   - docker:dind
-
 variables:
-  DEPLOY_PATH_AWS: "/home/ubuntu/photocontest-deploy/backend"
-  DEPLOY_PATH_DO: "/home/marco/gitlab-ws/photocontest-autodeploy/backend"
+  DEPLOY_PATH: "/home/marco/gitlab-ws/photocontest-autodeploy/backend"
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
-build-env-file:
-  image: alpine
-  stage: build
-  script:
-    - |
-        ENVIRONMENTS=$(cat << EOF
-          PORT = $PORT
-          JWT_SECRET=$JWT_SECRET
-          JWT_TOKEN_EXPIRATION=$JWT_TOKEN_EXPIRATION
-          AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-          AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-          REGION=$REGION
-          BUCKET=$BUCKET
-          CLOUDFRONT=$CLOUDFRONT
-          PGHOST=$PGHOST
-          PGPORT=$PGPORT
-          PGDATABASE=$PGDATABASE
-          PGUSER=$PGUSER
-          PGPASSWORD=$PGPASSWORD
-          REDIS_HOSTNAME_AWS=$REDIS_HOSTNAME_AWS
-          REDIS_PORT_AWS=$REDIS_PORT_AWS
-          REDIS_PASS_AWS=$REDIS_PASS_AWS
-          REDIS_HOST_VULTR=$REDIS_HOST_VULTR
-          REDIS_PORT_VULTR=$REDIS_PORT_VULTR
-          REDIS_PASS_VULTR=$REDIS_PASS_VULTR
-          ES_HOSTNAME_AWS=$ES_HOSTNAME_AWS
-          ES_HOSTNAME_VULTR=$ES_HOSTNAME_VULTR
-          RMQ_HOSTNAME_AWS=$RMQ_HOSTNAME_AWS
-          RMQ_HOSTNAME_VULTR=$RMQ_HOSTNAME_VULTR
-          AZURE_COGNITIVE_KEY=$AZURE_COGNITIVE_KEY
-        EOF
-        )
-    - echo "$ENVIRONMENTS" > .env
-  artifacts:
-    paths:
-    - .env
-    expire_in: 20 minutes
-
-# PRODUCTION AWS
-deploy-prod-aws:
-  stage: deploy
-  before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-    - eval $(ssh-agent -s)
-    - echo "$PRIVATE_KEY_AWS" | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan $HOSTNAME_AWS >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-  script:
-    - ssh $USERNAME_AWS@$HOSTNAME_AWS "mkdir -p $DEPLOY_PATH_AWS"
-    - scp -rp ./* $USERNAME_AWS@$HOSTNAME_AWS:$DEPLOY_PATH_AWS
-    - scp -rp .env $USERNAME_AWS@$HOSTNAME_AWS:$DEPLOY_PATH_AWS
-    - |
-      ssh $USERNAME_AWS@$HOSTNAME_AWS "cd $DEPLOY_PATH_AWS && 
-        docker-compose -f docker-compose-aws.yml up --build --force-recreate -d"
-  environment:
-    name: production-aws
-  only:
-    - tags
-
-# PRODUCTION DO
-build-prod-do:
+build:
   stage: build
   image: docker
   services:
@@ -86,15 +20,15 @@ build-prod-do:
     - docker push $IMAGE_TAG
     - docker rmi $IMAGE_TAG
 
-deploy-prod-do:
+deploy:
   stage: deploy
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     - eval $(ssh-agent -s)
-    - echo "$PRIVATE_KEY_DO" | tr -d '\r' | ssh-add - > /dev/null
+    - echo "$PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan -p $PORT_DO $HOSTNAME_DO >> ~/.ssh/known_hosts
+    - ssh-keyscan -p $PORT $HOSTNAME >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - |
       ENVIRONMENTS=$(cat << EOF
@@ -126,14 +60,15 @@ deploy-prod-do:
       )
     - echo "$ENVIRONMENTS" > .env
   script:
-    - ssh $USERNAME_DO@$HOSTNAME_DO -p $PORT_DO "mkdir -p $DEPLOY_PATH_DO"
-    - scp -P $PORT_DO -rp docker-compose-do.yml .env $USERNAME_DO@$HOSTNAME_DO:$DEPLOY_PATH_DO
+    - ssh $USERNAME@$HOSTNAME -p $PORT "mkdir -p $DEPLOY_PATH"
+    - scp -P $PORT -rp docker-compose.yml .env $USERNAME@$HOSTNAME:$DEPLOY_PATH
     - |
-      ssh $USERNAME_DO@$HOSTNAME_DO -p $PORT_DO "cd $DEPLOY_PATH_DO && 
-        docker-compose -f docker-compose-do.yml pull &&
-        docker-compose -f docker-compose-do.yml up --build --force-recreate -d"
+      ssh $USERNAME@$HOSTNAME -p $PORT "cd $DEPLOY_PATH && 
+        echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin &&
+        docker-compose -f docker-compose.yml pull &&
+        docker-compose -f docker-compose.yml up --build --force-recreate -d"
   environment:
-    name: production-do
+    name: production
     url: https://api.photocontest.marcostevanon.ovh/healthcheck
   when:
     manual

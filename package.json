@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "prod-aws": "NODE_ENV=prod-aws node server.js",
-    "prod-do": "NODE_ENV=prod-do node server.js"
+    "prod": "NODE_ENV=prod node server.js"
   },
   "repository": {
     "type": "git",
