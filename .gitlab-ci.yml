@@ -53,7 +53,7 @@ deploy:
     - echo "$ENVIRONMENTS" > .env
   script:
     - ssh $USERNAME@$HOSTNAME -p $PORT "mkdir -p $DEPLOY_PATH"
-    - scp -P $PORT -rp docker-compose.yml $USERNAME@$HOSTNAME:$DEPLOY_PATH
+    - scp -P $PORT -rp docker-compose.yml .env $USERNAME@$HOSTNAME:$DEPLOY_PATH
     - |
       ssh $USERNAME@$HOSTNAME -p $PORT "cd $DEPLOY_PATH && 
         echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin &&
