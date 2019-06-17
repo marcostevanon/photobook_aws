@@ -61,6 +61,6 @@ deploy:
         docker-compose -f docker-compose.yml up --build --force-recreate -d"
   environment:
     name: production
-    url: https://api.photocontest.marcostevanon.ovh/healthcheck
+    url: https://api.photocontest.marcostevanon.ovh
   when:
     manual
