@@ -30,7 +30,7 @@ app.all('*', (req, res) => res.sendStatus(404));
 console.log('Waiting for services start...');
 // setTimeout(() => {
 
-	const server = app.listen(process.env.PORT, () => {
+	const server = app.listen(process.env.API_PORT, () => {
 		console.log(`\nApp listening at http://${server.address().address}:${server.address().port}`);
 	});
 
