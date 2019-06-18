@@ -1,32 +1,66 @@
-#################### STAGING ####################
-deploy-stage:
-  stage: deploy
-  before_script:
-    - apt-get update -qq && apt-get install -y -qq sshpass
-    - sshpass -V
-    - export SSHPASS=$USER_PASS_STAGE
-    - mkdir -p ~/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - ls -al && pwd
-  script:
-    - sshpass -e ssh $USER_NAME_STAGE@$HOST_NAME_STAGE "cd ~/project/its-photocontest/backend && git checkout dev && git pull && docker-compose down && docker-compose -f docker-compose-stage.yml up -d"
-  environment:
-    name: staging
-  only:
-    - dev
+stages:
+  - build
+  - deploy
 
-#################### PRODUCTION ####################
-deploy-prod:
+variables:
+  DEPLOY_PATH: "/home/marco/gitlab-ws/photocontest-autodeploy/backend"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+build:
+  stage: build
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE_TAG --no-cache .
+    - docker push $IMAGE_TAG
+    - docker rmi $IMAGE_TAG
+
+deploy:
   stage: deploy
   before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
-    - echo -e "$SSH_PRIVATE_KEY_PROD" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -p $PORT $HOSTNAME >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - |
+      ENVIRONMENTS=$(cat << EOF
+      API_PORT=$API_PORT
+      JWT_SECRET=$JWT_SECRET
+      JWT_TOKEN_EXPIRATION=$JWT_TOKEN_EXPIRATION
+      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      REGION=$REGION
+      BUCKET=$BUCKET
+      CLOUDFRONT=$CLOUDFRONT
+      PGHOST=$PGHOST
+      PGPORT=$PGPORT
+      PGDATABASE=$PGDATABASE
+      PGUSER=$PGUSER
+      PGPASSWORD=$PGPASSWORD
+      REDIS_HOST=$REDIS_HOST
+      REDIS_PORT=$REDIS_PORT
+      REDIS_PASS=$REDIS_PASS
+      ES_HOSTNAME=$ES_HOSTNAME
+      RMQ_HOSTNAME=$RMQ_HOSTNAME
+      AZURE_COGNITIVE_KEY=$AZURE_COGNITIVE_KEY
+      EOF
+      )
+    - echo "$ENVIRONMENTS" > .env
   script:
-    - ssh $USER_NAME_PROD@$HOST_NAME_PROD "cd ~/apps/ITS_PhotoContest-Backend && git checkout master && git pull && pm2 restart photo-api"
+    - ssh $USERNAME@$HOSTNAME -p $PORT "mkdir -p $DEPLOY_PATH"
+    - scp -P $PORT -rp docker-compose.yml .env $USERNAME@$HOSTNAME:$DEPLOY_PATH
+    - |
+      ssh $USERNAME@$HOSTNAME -p $PORT "cd $DEPLOY_PATH && 
+        echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin &&
+        docker-compose -f docker-compose.yml pull &&
+        docker-compose -f docker-compose.yml up --build --force-recreate -d"
   environment:
     name: production
-  only:
-    - master
-  # - tags
+    url: https://api.photocontest.marcostevanon.ovh
+  when:
+    manual
